@@ -13,22 +13,10 @@ pygame.display.set_caption("World of Tiles")
 width, height = 800, 600
 screen = pygame.display.set_mode((width, height))
 
-FOREST_MAP = [
-    "# # # # # # # # # # # # # # # # # # # #",
-    "# . . . . . . . . . . . . . . . . . . #",
-    "# . . ~ ~ ~ ~ . . . . . . . . . . . . #",
-    "# . . ~ . . ~ . . . . . . . . . . . . #",
-    "# . . ~ ~ ~ ~ . . . . . . . . . . . . #",
-    "# . . . . . . . . . . . . . . . . . . #",
-    "# . . . . . . . . . . . . . . . . . . #",
-    "# # # # # # # # # # # # # # # # # # # #"
-]
-
 
 entity_manager = EntityManager()
-
-map_loader = MapLoader(FOREST_MAP)
-map_loader.load_map(entity_manager)
+map_loader = MapLoader()
+map_loader.load_map(entity_manager, "forest")
 
 rendering_system = RenderingSystem(screen, entity_manager)
 

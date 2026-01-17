@@ -3,7 +3,12 @@ GRASS = 1
 SAND = 2
 WATER = 3
 
-TILE_SIZE = 32
+MAPS_PATH = "assets/maps/"
+
+TILE_SIZE = {
+    "width": 32,
+    "height": 32
+}
 
 TILE_COLORS = {
     GRASS: (34, 139, 34),    # Forest green

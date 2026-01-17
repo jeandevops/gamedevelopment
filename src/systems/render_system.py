@@ -20,8 +20,8 @@ class RenderingSystem:
                 pygame.Rect(
                     position_component.x,
                     position_component.y,
-                    TILE_SIZE,
-                    TILE_SIZE
+                    TILE_SIZE["width"],
+                    TILE_SIZE["height"]
                 )
             )
 
