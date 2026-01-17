@@ -1,7 +1,7 @@
-from world.entity_manager import EntityManager
-from components.tile import TileComponent  
-from components.position import PositionComponent
-from utils.constants import MAPS_PATH, TILE_SIZE, GRASS, SAND, WATER
+from ecs.entity_manager import EntityManager
+from ecs.components.tile import TileComponent  
+from ecs.components.position import PositionComponent
+from helpers.constants import MAPS_PATH, TILE_SIZE, GRASS, SAND, WATER
 import json
 
 class MapLoader:

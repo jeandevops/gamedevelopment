@@ -4,8 +4,8 @@ from pygame.locals import QUIT
 from sys import exit
 
 from world.map_loader import MapLoader
-from world.entity_manager import EntityManager
-from systems.render_system import RenderingSystem
+from ecs.entity_manager import EntityManager
+from ecs.systems.render_system import RenderingSystem
 
 pygame.init()
 pygame.display.set_caption("World of Tiles")
