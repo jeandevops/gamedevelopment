@@ -1,11 +1,13 @@
 from ecs.entity_manager import EntityManager
+from ecs.components.camera import CameraComponent
 from helpers.constants import TILE_COLORS, TILE_SIZE
 import pygame
 
 class RenderingSystem:
-    def __init__(self, screen, entity_manager: EntityManager):
+    def __init__(self, screen, entity_manager: EntityManager, camera_component: CameraComponent):
         self.screen = screen
         self.entity_manager = entity_manager
+        self.camera_component = camera_component
 
     def render(self):
         """Renders all tiles onto the screen"""
@@ -18,8 +20,8 @@ class RenderingSystem:
                 self.screen,
                 tile_color,
                 pygame.Rect(
-                    position_component.x,
-                    position_component.y,
+                    position_component.x - self.camera_component.x,
+                    position_component.y - self.camera_component.y,
                     TILE_SIZE["width"],
                     TILE_SIZE["height"]
                 )

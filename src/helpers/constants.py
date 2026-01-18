@@ -15,3 +15,5 @@ TILE_COLORS = {
     SAND: (184, 134, 11),    # Dark goldenrod
     WATER: (0, 100, 200),    # Ocean blue
 }
+
+CAMERA_TRIGGER_MARGIN = 200
