@@ -212,6 +212,109 @@ if distance > trigger_margin:
 
 ---
 
+### 3. EventHandlerSystem
+
+**Purpose**: Processes user input and updates player velocity accordingly
+
+**Dependencies**:
+- `EntityManager`: To access the player entity
+- Constants: `SPEED`
+- `pygame.key.get_pressed()`: For input detection
+
+**How it works**:
+```
+1. Handle pygame events (QUIT, etc.)
+2. Get player entity from EntityManager
+3. Check which keys are currently pressed
+4. Update player velocity based on input:
+   - W → Move up (negative Y)
+   - A → Move left (negative X)
+   - S → Move down (positive Y)
+   - D → Move right (positive X)
+5. Set velocity on player's VelocityComponent
+```
+
+**Key Method**: `process_events(events)`
+```python
+def process_events(self, events):
+    # Handle pygame events (like QUIT)
+    for event in events:
+        if event.type == QUIT:
+            pygame.quit()
+            exit()
+    
+    # Get player and velocity component
+    player = self.entity_manager.get_entity_by_id("player")
+    if player is None:
+        return
+    
+    player_velocity = player["velocity"]
+    keys = pygame.key.get_pressed()
+    
+    # Reset velocity
+    vx = vy = 0
+    
+    # Update velocity based on pressed keys
+    if keys[K_w]: vy -= SPEED
+    if keys[K_s]: vy += SPEED
+    if keys[K_a]: vx -= SPEED
+    if keys[K_d]: vx += SPEED
+    
+    player_velocity.set_velocity(vx, vy)
+```
+
+**Design Note**: Uses `pygame.key.get_pressed()` instead of event-based input for smooth, continuous movement. Event-based input causes delays and jerky movement.
+
+**Extension Points**:
+- Add action buttons (space, enter for interactions)
+- Add input buffering for smooth combat
+
+---
+
+### 4. MovementSystem
+
+**Purpose**: Updates entity positions based on their velocities each frame
+
+**Dependencies**:
+- `EntityManager`: To query entities with position and velocity components
+
+**How it works**:
+```
+1. Get all entities with both "position" and "velocity" components
+2. For each entity:
+   a. Get position and velocity components
+   b. Update position: position += velocity * delta_time
+   c. This creates smooth movement independent of frame rate
+```
+
+**Key Method**: `update(delta_time)`
+```python
+def update(self, delta_time):
+    # Get all moving entities
+    entities = self.entity_manager.get_entities_with_components(['position', 'velocity'])
+    
+    for entity_id, components in entities:
+        position = components['position']
+        velocity = components['velocity']
+        
+        # Update position based on velocity and time
+        position.x += velocity.vx * delta_time
+        position.y += velocity.vy * delta_time
+```
+
+**Delta Time**: The `delta_time` parameter ensures movement is consistent regardless of frame rate:
+- At 60 FPS: `delta_time = 1/60 ≈ 0.0167`
+- Movement is: `distance = velocity * 0.0167` per frame
+- Same speed at any frame rate
+
+**Extension Points**:
+- Add acceleration/deceleration
+- Add friction/drag
+- Add collision responses
+- Add gravity for platformers
+
+---
+
 ## Components
 
 ### PositionComponent
@@ -264,6 +367,41 @@ class CameraComponent:
 
 ---
 
+### VelocityComponent
+**Stores**: Velocity (speed) in x and y directions
+
+```python
+class VelocityComponent:
+    def __init__(self, vx=0.0, vy=0.0):
+        self.vx = vx
+        self.vy = vy
+    
+    def set_velocity(self, vx, vy):
+        self.vx = vx
+        self.vy = vy
+```
+
+**Usage**: Any entity that moves (player, enemies, projectiles)
+
+---
+
+### PlayerComponent
+**Stores**: Player-specific state and input flags
+
+```python
+class PlayerComponent:
+    def __init__(self):
+        self.is_player = True
+        self.moving_up = False
+        self.moving_down = False
+        self.moving_left = False
+        self.moving_right = False
+```
+
+**Usage**: Marks an entity as the player and tracks input state
+
+---
+
 ## Data Flow
 
 ### Game Loop Flow
@@ -305,7 +443,46 @@ run.py
 │               "tile": TileComponent(...)
 │           }
 │       )
-└─→ Game loop starts
+│
+├─→ PlayerFactory.create_player(entity_manager, x=400, y=300)
+│   └─→ entity_manager.add_entity(
+│       entity_id="player",
+│       components={
+│           "position": PositionComponent(400, 300),
+│           "velocity": VelocityComponent(0, 0),
+│           "player_component": PlayerComponent(),
+│           "tile": TileComponent(...)
+│       }
+│   )
+│
+└─→ Initialize systems and game loop starts
+```
+
+### Complete Game Loop Flow
+
+```
+while True:
+│
+├─→ event_handler_system.process_events(pygame.event.get())
+│   └─→ Updates player velocity based on input
+│
+├─→ movement_system.update(delta_time=1/60)
+│   └─→ Updates all entity positions based on velocity
+│
+├─→ Get player position for camera
+│   └─→ player = entity_manager.get_entity_by_id("player")
+│
+├─→ camera_system.update(target_x=player.x, target_y=player.y)
+│   └─→ Updates camera position to follow player
+│
+├─→ screen.fill(BLACK)
+│   └─→ Clears the screen
+│
+├─→ rendering_system.render()
+│   └─→ Draws all entities with camera offset applied
+│
+└─→ pygame.display.update()
+    └─→ Shows the frame
 ```
 
 ---
@@ -330,7 +507,38 @@ run.py
 
 ---
 
-### 2. MapFactory as Utility, Not System ✅
+### 2. Entity Factories Outside Entity Manager ✅
+
+**Decision**: `PlayerFactory` and `MapFactory` exist outside the ECS core, creating entities separately
+
+**Why**:
+- **Separation of concerns**: Entity creation is distinct from entity management
+- **Reusability**: Factories can be called multiple times (e.g., spawn enemies)
+- **Testability**: Can test factory behavior independently
+- **Clarity**: `run.py` shows explicitly what entities are created
+- **Follows Single Responsibility**: EntityManager manages entities, factories create them
+
+**Pattern**:
+```python
+# Factory only creates entities
+class PlayerFactory:
+    @staticmethod
+    def create_player(entity_manager, x, y):
+        # Create entity with all necessary components
+        entity_manager.add_entity("player", components)
+
+# In run.py - clear bootstrap flow
+MapFactory.load_map(entity_manager, "forest")
+PlayerFactory.create_player(entity_manager, 400, 300)
+```
+
+**When you'd change this**:
+- Runtime entity spawning (enemies, items) - still use factories, pass entity_manager
+- Dynamic entity pools - create a factory that manages a pool
+
+---
+
+### 3. MapFactory as Utility, Not System ✅
 
 **Decision**: `MapFactory` exists outside ECS core
 
@@ -350,7 +558,7 @@ run.py
 
 ---
 
-### 3. Screen-Based Camera Movement ✅
+### 4. Screen-Based Camera Movement ✅
 
 **Decision**: Camera snaps in discrete jumps when target exceeds trigger margin
 
@@ -372,7 +580,7 @@ Else:
 
 ---
 
-### 4. Constants in Separate Module ✅
+### 5. Constants in Separate Module ✅
 
 **Decision**: Game configuration lives in `helpers/constants.py`
 
@@ -386,6 +594,36 @@ Else:
 - `TILE_SIZE`: Affects all rendering
 - `CAMERA_TRIGGER_MARGIN`: Controls camera behavior
 - `TILE_COLORS`: Visual style
+- `SPEED`: Player movement speed
+
+---
+
+### 6. Input Handling with Key States ✅
+
+**Decision**: `EventHandlerSystem` uses `pygame.key.get_pressed()` for continuous input detection
+
+**Why**:
+- **Smooth movement**: Player moves continuously while key is held
+- **Frame-independent**: Works correctly at any frame rate
+- **Multi-key support**: Can detect multiple keys pressed simultaneously (for diagonal movement)
+- **Better feel**: No input lag or jerkiness
+
+**Alternative (Event-Based - Avoided)**:
+```python
+# ❌ NOT RECOMMENDED - causes jerky movement
+if event.type == KEYDOWN:
+    player.move()  # Only moves once per key press
+```
+
+**Current Approach (State-Based)**:
+```python
+# ✅ RECOMMENDED - smooth continuous movement
+keys = pygame.key.get_pressed()
+if keys[K_w]:
+    velocity.vy -= SPEED  # Moves every frame while held
+```
+
+**Future Enhancement**: Could add diagonal movement optimization (move_up + move_left = diagonal)
 
 ---
 

@@ -1,38 +1,63 @@
 import pygame
-from pygame.locals import QUIT
 
 from sys import exit
 
+# Utils
+from helpers.constants import CAMERA_WIDTH, CAMERA_HEIGHT
 from world.map_loader import MapFactory
-from ecs.entity_manager import EntityManager
-from ecs.systems.render_system import RenderingSystem
+from world.player_factory import PlayerFactory
 
+# Components:
 from ecs.components.camera import CameraComponent
+
+# Systems:
+from ecs.systems.render_system import RenderingSystem
 from ecs.systems.camera_system import CameraSystem
+from ecs.systems.event_handler_system import EventHandlerSystem
+from ecs.systems.movement_system import MovementSystem
+
+# Entity Manager
+from ecs.entity_manager import EntityManager
 
 pygame.init()
 pygame.display.set_caption("World of Tiles")
 
-width, height = 800, 600
-screen = pygame.display.set_mode((width, height))
-
 entity_manager = EntityManager()
+
+# Load map
 map_factory = MapFactory()
 map_factory.load_map(entity_manager, "forest")
 
-camera_component = CameraComponent(x=0, y=0, viewport_width=width, viewport_height=height)
+# Create player
+PlayerFactory.create_player(entity_manager, x=400, y=300)
+
+# Initialize camera
+camera_component = CameraComponent(x=0, y=0, viewport_width=CAMERA_WIDTH, viewport_height=CAMERA_HEIGHT)
 camera_system = CameraSystem(camera_component)
 
+# Initialize systems
+event_handler_system = EventHandlerSystem(entity_manager)
+movement_system = MovementSystem(entity_manager)
+
+# Initialize rendering
+screen = pygame.display.set_mode((CAMERA_WIDTH, CAMERA_HEIGHT))
 rendering_system = RenderingSystem(screen, entity_manager, camera_component)
 
 while True:
-    for event in pygame.event.get():
-        if event.type == QUIT:
-            pygame.quit()
-            exit()
+    # Process input events
+    event_handler_system.process_events(pygame.event.get())
     
+    # Update game logic
+    movement_system.update(delta_time=1/60)  # Assuming 60 FPS
+    
+    # Get player position for camera
+    player = entity_manager.get_entity_by_id("player")
+    if player:
+        player_x = player["position"].x
+        player_y = player["position"].y
+        camera_system.update(target_x=player_x, target_y=player_y)
+    
+    # Render
     screen.fill((0, 0, 0))
     rendering_system.render()
-    # Temporary test position, in the future this would be the player's position
-    camera_system.update(target_x=800, target_y=600)
     pygame.display.update()

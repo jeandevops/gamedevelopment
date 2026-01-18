@@ -17,3 +17,8 @@ TILE_COLORS = {
 }
 
 CAMERA_TRIGGER_MARGIN = 200
+
+CAMERA_WIDTH = 800
+CAMERA_HEIGHT = 600
+
+SPEED = 300  # Player movement speed in pixels per second
