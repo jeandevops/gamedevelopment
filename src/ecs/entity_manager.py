@@ -11,14 +11,10 @@ class EntityManager:
         """Returns the entity with the specified ID"""
         return self.entities.get(entity_id, None)
 
-    def get_entities_with_component(self, component_type: str) -> list[tuple[str, dict]]:
+    def get_entities_with_components(self, component_type_list: list[str]) -> list[tuple[str, dict]]:
         """Returns all entities that have a specific component type"""
         result = []
         for entity_id, components in self.entities.items():
-            if component_type in components:
-                result.append((entity_id, components[component_type]))
+            if all(component_type in components for component_type in component_type_list):
+                result.append((entity_id, components))
         return result
-
-    def get_all_entities(self) -> dict:
-        """Returns all entities managed by the EntityManager"""
-        return self.entities
