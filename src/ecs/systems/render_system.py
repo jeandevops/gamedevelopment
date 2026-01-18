@@ -4,7 +4,7 @@ from helpers.constants import TILE_COLORS, TILE_SIZE
 import pygame
 
 class RenderingSystem:
-    def __init__(self, screen, entity_manager: EntityManager, camera_component: CameraComponent):
+    def __init__(self, screen: pygame.Surface, entity_manager: EntityManager, camera_component: CameraComponent):
         self.screen = screen
         self.entity_manager = entity_manager
         self.camera_component = camera_component

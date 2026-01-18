@@ -1,4 +1,4 @@
-from helpers.constants import GRASS, SAND, WATER
+from helpers.constants import GRASS, SAND
 
 class TileComponent:
     def __init__(self, width: int, height: int, tile_type: int):
