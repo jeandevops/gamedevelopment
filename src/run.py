@@ -3,7 +3,7 @@ from pygame.locals import QUIT
 
 from sys import exit
 
-from world.map_loader import MapLoader
+from world.map_loader import MapFactory
 from ecs.entity_manager import EntityManager
 from ecs.systems.render_system import RenderingSystem
 
@@ -17,8 +17,8 @@ width, height = 800, 600
 screen = pygame.display.set_mode((width, height))
 
 entity_manager = EntityManager()
-map_loader = MapLoader()
-map_loader.load_map(entity_manager, "forest")
+map_factory = MapFactory()
+map_factory.load_map(entity_manager, "forest")
 
 camera_component = CameraComponent(x=0, y=0, viewport_width=width, viewport_height=height)
 camera_system = CameraSystem(camera_component)

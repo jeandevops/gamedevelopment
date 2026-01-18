@@ -4,7 +4,7 @@ from ecs.components.position import PositionComponent
 from helpers.constants import MAPS_PATH, TILE_SIZE, GRASS, SAND, WATER
 import json
 
-class MapLoader:
+class MapFactory:
     def __init__(self):
         self.map_data = None
 
