@@ -15,6 +15,8 @@ class RenderingSystem:
         tiles = self._retrieve_tiles()
         for entity_id, tile_component in tiles:
             position_component = self.entity_manager.get_entity_by_id(entity_id)["position"]
+            if position_component is None:
+                continue
             tile_color = self._get_tile_color(tile_component.tile_type)
             pygame.draw.rect(
                 self.screen,
