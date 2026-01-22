@@ -1,6 +1,7 @@
 from ecs.entity_manager import EntityManager
 from ecs.components.tile import TileComponent  
 from ecs.components.position import PositionComponent
+from ecs.components.sprite import SpriteComponent
 from helpers.constants import MAPS_PATH, TILE_SIZE, GRASS, SAND, WATER
 import json
 
@@ -19,10 +20,12 @@ class MapFactory:
             for col_index, tile_type in enumerate(row):
                 entity_id = f"tile_{row_index}_{col_index}"
                 position = PositionComponent(x=col_index * TILE_SIZE["width"], y=row_index * TILE_SIZE["height"])
-                tile = TileComponent(width=TILE_SIZE["width"], height=TILE_SIZE["height"], tile_type=tile_type)
+                sprite = SpriteComponent(width=TILE_SIZE["width"], height=TILE_SIZE["height"])
+                tile = TileComponent(tile_type=tile_type)
                 components = {
                     "position": position,
-                    "tile": tile
+                    "tile": tile,
+                    "sprite": sprite
                 }
                 entity_manager.add_entity(entity_id, components)
 

@@ -13,21 +13,30 @@ class RenderingSystem:
         """Renders all tiles onto the screen"""
 
         tiles = self._retrieve_tiles()
-        for entity_id, tile_component in tiles:
-            position_component = self.entity_manager.get_entity_by_id(entity_id)["position"]
-            if position_component is None:
-                continue
-            tile_color = self._get_tile_color(tile_component["tile"].tile_type)
+        for entity_id, tile_components in tiles:
+            tile_color = self._get_tile_color(tile_components["tile"].tile_type)
             pygame.draw.rect(
                 self.screen,
                 tile_color,
                 pygame.Rect(
-                    position_component.x - self.camera_component.x,
-                    position_component.y - self.camera_component.y,
-                    TILE_SIZE["width"],
-                    TILE_SIZE["height"]
+                    tile_components["position"].x - self.camera_component.x,
+                    tile_components["position"].y - self.camera_component.y,
+                    tile_components["sprite"].width,
+                    tile_components["sprite"].height
                 )
             )
+
+        player = self.entity_manager.get_entity_by_id("player")
+        pygame.draw.rect(
+            self.screen,
+            (255, 0, 0),
+            pygame.Rect(
+                player["position"].x - self.camera_component.x,
+                player["position"].y - self.camera_component.y,
+                player["sprite"].width,
+                player["sprite"].height
+            )
+        )
 
     def _retrieve_tiles(self) -> list[tuple[str, dict]]:
         """Retrieves all tile entities from the EntityManager"""

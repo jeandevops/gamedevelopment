@@ -1,7 +1,7 @@
 from ecs.components.position import PositionComponent
 from ecs.components.velocity import VelocityComponent
 from ecs.components.player import PlayerComponent
-from ecs.components.tile import TileComponent
+from ecs.components.sprite import SpriteComponent
 from helpers.constants import WATER
 
 
@@ -22,6 +22,6 @@ class PlayerFactory:
             "position": PositionComponent(x=x, y=y),
             "velocity": VelocityComponent(vx=0, vy=0),
             "player_component": PlayerComponent(),
-            "tile": TileComponent(width=32, height=32, tile_type=WATER)
+            "sprite": SpriteComponent(width=32, height=32)
         }
         entity_manager.add_entity("player", player_components)
