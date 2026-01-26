@@ -19,5 +19,5 @@ class MovementSystem:
             if self.collision_system.check_collision_with_tiles(entity_id, new_x, new_y):
                 continue
 
-            position.x = new_x
-            position.y = new_y
+            position.x = round(new_x)
+            position.y = round(new_y)

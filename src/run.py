@@ -3,7 +3,7 @@ import pygame
 from sys import exit
 
 # Utils
-from helpers.constants import CAMERA_WIDTH, CAMERA_HEIGHT
+from helpers.constants import CAMERA_WIDTH, CAMERA_HEIGHT, FPS
 from world.map_loader import MapFactory
 from world.player_factory import PlayerFactory
 
@@ -29,7 +29,7 @@ map_factory = MapFactory()
 map_factory.load_map(entity_manager, "forest")
 
 # Create player
-PlayerFactory.create_player(entity_manager, x=400, y=300)
+PlayerFactory.create_player(entity_manager, x=0, y=0)
 
 # Initialize camera
 camera_component = CameraComponent(x=0, y=0, viewport_width=CAMERA_WIDTH, viewport_height=CAMERA_HEIGHT)
@@ -43,12 +43,38 @@ movement_system = MovementSystem(entity_manager)
 screen = pygame.display.set_mode((CAMERA_WIDTH, CAMERA_HEIGHT))
 rendering_system = RenderingSystem(screen, entity_manager, camera_component)
 
+# Object that will defines the FPS dinamically:
+clock = pygame.time.Clock()
+
+# Fixed timestep for physics (always 1/FPS, regardless of actual rendering FPS)
+_FIXED_DELTA_TIME = 1.0 / FPS
+time_accumulator = 0.0
+
 while True:
+    # Get elapsed time since last frame and limit to target FPS
+    milliseconds_elapsed = clock.tick(FPS)
+    delta_time = milliseconds_elapsed / 1000.0
+    
+    # Accumulate time
+    time_accumulator += delta_time
+    
     # Process input events
     event_handler_system.process_events(pygame.event.get())
     
-    # Update game logic
-    movement_system.update(delta_time=1/60)  # Assuming 60 FPS
+    # Update game logic with fixed timestep
+    # This runs physics at consistent 1/FPS regardless of the users processor actual frame rate.
+    # Example:
+    # For 60 FPS (16.67ms per frame) and rendering at 120 FPS (8.3ms per frame):
+    # Main Loop (crazy fast):     [frame] [frame] [frame] [frame] [frame] ...
+    #                              8.3ms   8.3ms   8.3ms   8.3ms   8.3ms
+    # 
+    # Accumulator grows:           8.3  →  16.6  →  24.9  →  33.2  → ...
+    # 
+    # Physics runs when ≥16.67ms:              ↓ RUN          ↓ RUN
+    #                             (accumulator = 0)  (accumulator = 8.3)
+    while time_accumulator >= _FIXED_DELTA_TIME:
+        movement_system.update(delta_time=_FIXED_DELTA_TIME)
+        time_accumulator -= _FIXED_DELTA_TIME
     
     # Get player position for camera
     player = entity_manager.get_entity_by_id("player")

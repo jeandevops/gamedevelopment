@@ -302,10 +302,97 @@ def update(self, delta_time):
         position.y += velocity.vy * delta_time
 ```
 
-**Delta Time**: The `delta_time` parameter ensures movement is consistent regardless of frame rate:
-- At 60 FPS: `delta_time = 1/60 ≈ 0.0167`
-- Movement is: `distance = velocity * 0.0167` per frame
-- Same speed at any frame rate
+**Delta Time**: Fixed timestep for deterministic physics
+
+Delta time is the elapsed time between physics updates. Our game uses a **fixed timestep** approach:
+
+```
+FIXED_DELTA_TIME = 1 / FPS  (physics always updates at target FPS)
+```
+
+**The Problem with Variable Delta Time:**
+
+If we use actual elapsed time (variable), movement becomes unpredictable:
+- Frame 1: `position += 240 × 0.01667 = 4.0` → rounds to 4
+- Frame 2: `position += 240 × 0.01662 = 3.99` → rounds to 4  (clock was slightly faster)
+- Frame 3: `position += 240 × 0.01672 = 4.01` → rounds to 4  (clock was slightly slower)
+
+The rounding is unpredictable, causing **inconsistent collision gaps**.
+
+**The Solution: Fixed Timestep**
+
+Decouple physics from rendering:
+- **Physics runs at fixed 60 FPS** (always consistent)
+- **Rendering runs at maximum FPS** (smooth but independent)
+- **Time accumulator** buffers actual elapsed time
+
+**How it works:**
+
+```python
+FIXED_DELTA_TIME = 1.0 / FPS  # Physics: always 1/FPS second
+time_accumulator = 0.0
+
+while True:
+    # Rendering loop runs as fast as possible
+    milliseconds_elapsed = clock.tick(FPS)  # Limit to target FPS
+    delta_time = milliseconds_elapsed / 1000.0
+    
+    # Accumulate real time
+    time_accumulator += delta_time
+    
+    # Physics loop: runs when enough time accumulated
+    while time_accumulator >= FIXED_DELTA_TIME:
+        movement_system.update(delta_time=FIXED_DELTA_TIME)  # Always 1/FPS
+        time_accumulator -= FIXED_DELTA_TIME
+    
+    # Rendering always runs
+    rendering_system.render()
+```
+
+**Visual Example at 120 FPS with FPS=60 (8.3ms per actual frame):**
+
+```
+Actual Frame Loop:        [8.3ms]  [8.3ms]  [8.3ms]  [8.3ms]  [8.3ms]
+Accumulator grows:         8.3  →   16.6   →  24.9   →   8.3   → 16.6
+
+Physics Update (1/60):              ✓ RUN           ✓ RUN
+                       (accumulator = 0)  (accumulator = 8.3)
+                       (+16.67ms)         (+16.67ms)
+
+Movement per physics:                   4 px           4 px
+```
+
+**Benefits:**
+
+| Aspect | Fixed Timestep | Variable Timestep |
+|--------|---|---|
+| Physics speed | Always consistent | Varies with FPS |
+| Collision detection | Deterministic | Random gaps |
+| Reproducibility | Same every run | Depends on frame rate |
+| Debugging | Predictable behavior | Hard to reproduce bugs |
+
+**Why velocity is in pixels/second:**
+
+```python
+SPEED = 240  # pixels per second (not per frame!)
+
+# At any frame rate, physics always calculates:
+movement = 240 × (1/60) = 4 pixels per physics update
+```
+
+**Important Notes:**
+
+- `clock.tick(FPS)` **limits** the rendering loop to maximum FPS
+  - If loop is fast (e.g., 500 FPS), it sleeps to slow down to FPS
+  - If loop is slow (e.g., 30 FPS), it doesn't sleep (you get lower FPS)
+  - Returns milliseconds elapsed since last call (varies slightly: 16.6, 16.7, 16.8 ms)
+- Physics updates can happen 0, 1, or multiple times per frame
+  - At 60 FPS: 1 physics update per frame
+  - At 120 FPS: 1 physics update every 2 frames
+  - At 30 FPS: 2 physics updates per frame (catches up)
+- Tiny variations in elapsed time (±1-2 ms) are absorbed by accumulator
+  - Without accumulator, rounding would cause inconsistent collision gaps
+  - With fixed timestep, physics is always deterministic
 
 **Extension Points**:
 - Add acceleration/deceleration
