@@ -1,53 +1,54 @@
 # Game Development Project - Architecture Documentation
 
-## Table of Contents
-1. [Overview](#overview)
-2. [ECS Architecture Explained](#ecs-architecture-explained)
-3. [Project Structure](#project-structure)
-4. [Systems](#systems)
-5. [Components](#components)
-6. [Data Flow](#data-flow)
-7. [Architecture Decisions](#architecture-decisions)
-8. [How to Extend](#how-to-extend)
+A tile-based game engine built with **Entity Component System (ECS)** architecture using Pygame.
+
+## Quick Navigation
+
+- **[SYSTEMS.md](SYSTEMS.md)** - How rendering, camera, input, movement, and collision work
+- **[COMPONENTS.md](COMPONENTS.md)** - Reference for Position, Tile, Camera, Velocity, Player, Sprite components
+- **[PHYSICS.md](PHYSICS.md)** - Delta time, fixed timestep, and frame-rate independent movement
+- **[ROADMAP.md](ROADMAP.md)** - Project phases and planned features
 
 ---
 
 ## Overview
 
-This project is a tile-based game engine built with **Entity Component System (ECS)** architecture using Pygame. It demonstrates game development best practices with a clean separation of concerns.
-
 ### Key Features
 - **Modular ECS architecture** for scalability
-- **Camera system** with screen-based navigation
+- **Camera system** with screen-based navigation (Zelda-style)
 - **Map loading** from JSON files
 - **Tile-based rendering** with configurable tile types
+- **Collision detection** with AABB physics
+- **Frame-rate independent movement** with fixed timestep
+
+### Technology Stack
+- **Pygame-CE 2.5.6** - Game library
+- **Python 3.12.3** - Language
+- **JSON** - Map format
+- **SDL 2.32.10** - Graphics backend (via Pygame)
 
 ---
 
-## ECS Architecture Explained
+## ECS Architecture
 
 ### What is ECS?
 
-ECS stands for **Entity, Component, System**:
+**Entity, Component, System** is a data-driven architecture:
 
 #### Entities
-- **What**: Game objects (tiles, player, enemies, etc.)
-- **How**: Unique identifiers that hold collections of components
-- **Example**: A tile at position (5, 3) is an entity with Position and Tile components
+Game objects identified by unique IDs, containing a collection of components.
 
 ```python
-# Entity ID: "tile_3_5"
-# Components:
-{
-    "position": PositionComponent(x=160, y=96),
-    "tile": TileComponent(width=32, height=32, tile_type=GRASS)
+entity_id = "player"
+components = {
+    "position": PositionComponent(x=100, y=100),
+    "velocity": VelocityComponent(vx=0, vy=0),
+    "player": PlayerComponent()
 }
 ```
 
 #### Components
-- **What**: Data containers that describe entity properties
-- **How**: Plain objects storing state (no logic)
-- **Example**: `PositionComponent` holds x, y coordinates
+Pure data holders describing entity properties. No logic, just state.
 
 ```python
 class PositionComponent:
@@ -57,26 +58,29 @@ class PositionComponent:
 ```
 
 #### Systems
-- **What**: Logic processors that operate on entities with specific components
-- **How**: Iterate through entities, read/modify components, perform actions
-- **Example**: `RenderingSystem` finds all entities with Tile components and draws them
+Logic processors that operate on entities with specific components.
 
 ```python
-class RenderingSystem:
-    def render(self):
-        tiles = self.entity_manager.get_entities_with_component("tile")
-        for entity_id, tile_component in tiles:
-            # Draw tile...
+class MovementSystem:
+    def update(self, delta_time):
+        # Get all entities with position and velocity
+        entities = entity_manager.get_entities_with_components(['position', 'velocity'])
+        
+        for entity_id, components in entities:
+            # Process movement
+            position = components['position']
+            velocity = components['velocity']
+            position.x += velocity.vx * delta_time
 ```
 
 ### Why ECS?
 
-| Benefit | Why it matters |
+| Benefit | Why It Matters |
 |---------|----------------|
-| **Modularity** | Easy to add new features without touching existing code |
-| **Reusability** | Components can be mixed and matched in any combination |
-| **Performance** | Systems can process only relevant entities |
-| **Testability** | Systems are independent and easy to unit test |
+| **Modularity** | Easy to add features without touching existing code |
+| **Reusability** | Components mix and match in any combination |
+| **Performance** | Systems process only relevant entities |
+| **Testability** | Systems are independent and easy to test |
 | **Scalability** | Grows naturally with project complexity |
 
 ---
@@ -87,489 +91,123 @@ class RenderingSystem:
 src/
 ├── run.py                          # Main entry point
 ├── ecs/                            # ECS Core
-│   ├── entity_manager.py           # Manages all entities
+│   ├── entity_manager.py           # Entity storage & queries
 │   ├── components/                 # Component definitions
-│   │   ├── position.py             # Position data
-│   │   ├── tile.py                 # Tile type data
-│   │   └── camera.py               # Camera data
+│   │   ├── position.py
+│   │   ├── tile.py
+│   │   ├── camera.py
+│   │   ├── velocity.py
+│   │   ├── player.py
+│   │   └── sprite.py
 │   └── systems/                    # System logic
-│       ├── render_system.py        # Rendering logic
-│       └── camera_system.py        # Camera update logic
-├── world/                          # Game world setup
-│   └── map_loader.py               # Map file parsing
-├── helpers/                        # Utilities
-│   └── constants.py                # Game configuration
+│       ├── render_system.py
+│       ├── camera_system.py
+│       ├── event_handler_system.py
+│       ├── movement_system.py
+│       └── collision_system.py
+├── world/                          # Game initialization
+│   ├── map_loader.py
+│   └── player_factory.py
+├── helpers/
+│   └── constants.py                # Configuration
 └── assets/
     └── maps/
-        └── forest.json             # Map data
+        └── forest.json
 ```
 
 ### Directory Roles
 
-**`ecs/`** - The heart of the engine
-- Contains all ECS infrastructure
-- Pure logic, no game-specific knowledge
+**`ecs/`** - Engine core
+- Pure ECS infrastructure
+- No game-specific knowledge
 - Reusable for other games
 
-**`world/`** - Game world initialization
-- Loads maps from files
-- Creates initial entities
-- Bootstraps the game state
+**`world/`** - Game world setup
+- Map loading from JSON
+- Entity creation (factories)
+- Bootstrap
 
-**`helpers/`** - Shared utilities
-- Global constants (tile sizes, colors, paths)
-- Configuration values
-- Non-ECS helper functions
-
----
-
-## Systems
-
-### 1. RenderingSystem
-
-**Purpose**: Draws all visible tiles on screen based on camera position
-
-**Dependencies**:
-- `EntityManager`: To query entities with tile components
-- `Camera`: To calculate drawing offsets
-- `pygame`: For drawing primitives
-
-**How it works**:
-```
-1. Get all entities with "tile" component
-2. For each tile entity:
-   a. Get its position and tile type
-   b. Calculate screen position (position - camera.position)
-   c. Draw a rectangle with appropriate color
-```
-
-**Key Method**: `render()`
-```python
-def render(self):
-    tiles = self._retrieve_tiles()
-    for entity_id, tile_component in tiles:
-        # Get world position
-        position = self.entity_manager.get_entity_by_id(entity_id)["position"]
-        
-        # Get tile color
-        tile_color = self._get_tile_color(tile_component.tile_type)
-        
-        # Apply camera offset and draw
-        screen_x = position.x - self.camera.x
-        screen_y = position.y - self.camera.y
-        pygame.draw.rect(self.screen, tile_color, 
-                        pygame.Rect(screen_x, screen_y, TILE_SIZE["width"], TILE_SIZE["height"]))
-```
-
-**Extension Points**:
-- Add sprite rendering instead of colored rectangles
-- Implement layer-based rendering (background, objects, UI)
-- Add animation support
+**`helpers/`** - Utilities
+- Constants (tile sizes, colors, speeds)
+- Configuration
 
 ---
 
-### 2. CameraSystem
+## System Overview
 
-**Purpose**: Updates camera position to follow a target with screen-based snapping
+See **[SYSTEMS.md](SYSTEMS.md)** for detailed documentation.
 
-**Dependencies**:
-- `CameraComponent`: The camera to update
-- Constants: `CAMERA_TRIGGER_MARGIN`
+### Core Systems
 
-**How it works**:
-```
-1. Called each frame with target position
-2. Checks if target is beyond trigger margin from screen center
-3. If yes, snaps camera to center target on screen
-4. Camera follows in discrete jumps (not smooth)
-```
+1. **RenderingSystem** - Draws all visible entities with camera offset
+2. **CameraSystem** - Follows player with screen-based snapping
+3. **EventHandlerSystem** - Converts keyboard input to player velocity
+4. **MovementSystem** - Updates positions with collision checking
+5. **CollisionSystem** - AABB collision detection between entities and tiles
 
-**Key Method**: `update(target_x, target_y)`
-```python
-def update(self, target_x, target_y):
-    # Camera.follow_target() implements the snapping logic
-    self.camera.follow_target(target_x, target_y, self.trigger_margin)
-```
-
-**Camera Logic**:
-```python
-# Current screen center
-screen_center_x = camera.x + viewport_width / 2
-
-# Distance from center
-distance = abs(screen_center_x - target_x)
-
-# If target is beyond margin, snap camera
-if distance > trigger_margin:
-    camera.x = target_x - viewport_width / 2
-```
-
-**Extension Points**:
-- Add smooth camera movement (lerp)
-- Add camera bounds (don't show beyond map edges)
-- Add camera shake effects
-- Support multiple targets (split-screen)
-
----
-
-### 3. EventHandlerSystem
-
-**Purpose**: Processes user input and updates player velocity accordingly
-
-**Dependencies**:
-- `EntityManager`: To access the player entity
-- Constants: `SPEED`
-- `pygame.key.get_pressed()`: For input detection
-
-**How it works**:
-```
-1. Handle pygame events (QUIT, etc.)
-2. Get player entity from EntityManager
-3. Check which keys are currently pressed
-4. Update player velocity based on input:
-   - W → Move up (negative Y)
-   - A → Move left (negative X)
-   - S → Move down (positive Y)
-   - D → Move right (positive X)
-5. Set velocity on player's VelocityComponent
-```
-
-**Key Method**: `process_events(events)`
-```python
-def process_events(self, events):
-    # Handle pygame events (like QUIT)
-    for event in events:
-        if event.type == QUIT:
-            pygame.quit()
-            exit()
-    
-    # Get player and velocity component
-    player = self.entity_manager.get_entity_by_id("player")
-    if player is None:
-        return
-    
-    player_velocity = player["velocity"]
-    keys = pygame.key.get_pressed()
-    
-    # Reset velocity
-    vx = vy = 0
-    
-    # Update velocity based on pressed keys
-    if keys[K_w]: vy -= SPEED
-    if keys[K_s]: vy += SPEED
-    if keys[K_a]: vx -= SPEED
-    if keys[K_d]: vx += SPEED
-    
-    player_velocity.set_velocity(vx, vy)
-```
-
-**Design Note**: Uses `pygame.key.get_pressed()` instead of event-based input for smooth, continuous movement. Event-based input causes delays and jerky movement.
-
-**Extension Points**:
-- Add action buttons (space, enter for interactions)
-- Add input buffering for smooth combat
-
----
-
-### 4. MovementSystem
-
-**Purpose**: Updates entity positions based on their velocities each frame
-
-**Dependencies**:
-- `EntityManager`: To query entities with position and velocity components
-
-**How it works**:
-```
-1. Get all entities with both "position" and "velocity" components
-2. For each entity:
-   a. Get position and velocity components
-   b. Update position: position += velocity * delta_time
-   c. This creates smooth movement independent of frame rate
-```
-
-**Key Method**: `update(delta_time)`
-```python
-def update(self, delta_time):
-    # Get all moving entities
-    entities = self.entity_manager.get_entities_with_components(['position', 'velocity'])
-    
-    for entity_id, components in entities:
-        position = components['position']
-        velocity = components['velocity']
-        
-        # Update position based on velocity and time
-        position.x += velocity.vx * delta_time
-        position.y += velocity.vy * delta_time
-```
-
-**Delta Time**: Fixed timestep for deterministic physics
-
-Delta time is the elapsed time between physics updates. Our game uses a **fixed timestep** approach:
+### Data Flow
 
 ```
-FIXED_DELTA_TIME = 1 / FPS  (physics always updates at target FPS)
+Main Loop
+├─ Input: EventHandlerSystem
+│  └─ Updates player velocity
+│
+├─ Physics: MovementSystem  
+│  └─ Updates position with collision checking
+│
+├─ Camera: CameraSystem
+│  └─ Follows player
+│
+└─ Render: RenderingSystem
+   └─ Draws entities with camera offset
 ```
-
-**The Problem with Variable Delta Time:**
-
-If we use actual elapsed time (variable), movement becomes unpredictable:
-- Frame 1: `position += 240 × 0.01667 = 4.0` → rounds to 4
-- Frame 2: `position += 240 × 0.01662 = 3.99` → rounds to 4  (clock was slightly faster)
-- Frame 3: `position += 240 × 0.01672 = 4.01` → rounds to 4  (clock was slightly slower)
-
-The rounding is unpredictable, causing **inconsistent collision gaps**.
-
-**The Solution: Fixed Timestep**
-
-Decouple physics from rendering:
-- **Physics runs at fixed 60 FPS** (always consistent)
-- **Rendering runs at maximum FPS** (smooth but independent)
-- **Time accumulator** buffers actual elapsed time
-
-**How it works:**
-
-```python
-FIXED_DELTA_TIME = 1.0 / FPS  # Physics: always 1/FPS second
-time_accumulator = 0.0
-
-while True:
-    # Rendering loop runs as fast as possible
-    milliseconds_elapsed = clock.tick(FPS)  # Limit to target FPS
-    delta_time = milliseconds_elapsed / 1000.0
-    
-    # Accumulate real time
-    time_accumulator += delta_time
-    
-    # Physics loop: runs when enough time accumulated
-    while time_accumulator >= FIXED_DELTA_TIME:
-        movement_system.update(delta_time=FIXED_DELTA_TIME)  # Always 1/FPS
-        time_accumulator -= FIXED_DELTA_TIME
-    
-    # Rendering always runs
-    rendering_system.render()
-```
-
-**Visual Example at 120 FPS with FPS=60 (8.3ms per actual frame):**
-
-```
-Actual Frame Loop:        [8.3ms]  [8.3ms]  [8.3ms]  [8.3ms]  [8.3ms]
-Accumulator grows:         8.3  →   16.6   →  24.9   →   8.3   → 16.6
-
-Physics Update (1/60):              ✓ RUN           ✓ RUN
-                       (accumulator = 0)  (accumulator = 8.3)
-                       (+16.67ms)         (+16.67ms)
-
-Movement per physics:                   4 px           4 px
-```
-
-**Benefits:**
-
-| Aspect | Fixed Timestep | Variable Timestep |
-|--------|---|---|
-| Physics speed | Always consistent | Varies with FPS |
-| Collision detection | Deterministic | Random gaps |
-| Reproducibility | Same every run | Depends on frame rate |
-| Debugging | Predictable behavior | Hard to reproduce bugs |
-
-**Why velocity is in pixels/second:**
-
-```python
-SPEED = 240  # pixels per second (not per frame!)
-
-# At any frame rate, physics always calculates:
-movement = 240 × (1/60) = 4 pixels per physics update
-```
-
-**Important Notes:**
-
-- `clock.tick(FPS)` **limits** the rendering loop to maximum FPS
-  - If loop is fast (e.g., 500 FPS), it sleeps to slow down to FPS
-  - If loop is slow (e.g., 30 FPS), it doesn't sleep (you get lower FPS)
-  - Returns milliseconds elapsed since last call (varies slightly: 16.6, 16.7, 16.8 ms)
-- Physics updates can happen 0, 1, or multiple times per frame
-  - At 60 FPS: 1 physics update per frame
-  - At 120 FPS: 1 physics update every 2 frames
-  - At 30 FPS: 2 physics updates per frame (catches up)
-- Tiny variations in elapsed time (±1-2 ms) are absorbed by accumulator
-  - Without accumulator, rounding would cause inconsistent collision gaps
-  - With fixed timestep, physics is always deterministic
-
-**Extension Points**:
-- Add acceleration/deceleration
-- Add friction/drag
-- Add collision responses
-- Add gravity for platformers
 
 ---
 
 ## Components
 
-### PositionComponent
-**Stores**: x, y coordinates in world space
+See **[COMPONENTS.md](COMPONENTS.md)** for detailed reference.
 
-```python
-class PositionComponent:
-    def __init__(self, x=0.0, y=0.0):
-        self.x = x
-        self.y = y
-```
+### Core Components
 
-**Usage**: Any entity that has a location
-
----
-
-### TileComponent
-**Stores**: Tile dimensions and type
-
-```python
-class TileComponent:
-    def __init__(self, width, height, tile_type):
-        self.width = width
-        self.height = height
-        self.tile_type = tile_type  # GRASS, SAND, WATER
-```
-
-**Usage**: Ground tiles that should be rendered
-
-**Tile Types** (from `constants.py`):
-- `GRASS = 1` → Green
-- `SAND = 2` → Brown
-- `WATER = 3` → Blue
+| Component | Purpose | Entities |
+|-----------|---------|----------|
+| **Position** | World coordinates (x, y) | Everything |
+| **Tile** | Tile type and walkability | Ground tiles |
+| **Velocity** | Movement speed (vx, vy) | Moving entities |
+| **Player** | Player identification | Player only |
+| **Sprite** | Visual dimensions | Visual entities |
+| **Camera** | Viewport (position, size) | Camera only |
 
 ---
 
-### CameraComponent
-**Stores**: Camera position and viewport
+## Physics & Movement
+
+See **[PHYSICS.md](PHYSICS.md)** for detailed explanation.
+
+### Fixed Timestep
+
+Physics runs at fixed `1/FPS` delta_time:
+- Ensures deterministic, consistent movement
+- Eliminates random collision gaps
+- Physics independent of rendering FPS
+
+### Time Accumulator
 
 ```python
-class CameraComponent:
-    def __init__(self, x, y, viewport_width, viewport_height):
-        self.x = x
-        self.y = y
-        self.viewport_width = viewport_width
-        self.viewport_height = viewport_height
-```
+# In run.py
+FIXED_DELTA_TIME = 1.0 / FPS
+time_accumulator = 0.0
 
-**Usage**: Manages what portion of the world is visible
-
----
-
-### VelocityComponent
-**Stores**: Velocity (speed) in x and y directions
-
-```python
-class VelocityComponent:
-    def __init__(self, vx=0.0, vy=0.0):
-        self.vx = vx
-        self.vy = vy
-    
-    def set_velocity(self, vx, vy):
-        self.vx = vx
-        self.vy = vy
-```
-
-**Usage**: Any entity that moves (player, enemies, projectiles)
-
----
-
-### PlayerComponent
-**Stores**: Player-specific state and input flags
-
-```python
-class PlayerComponent:
-    def __init__(self):
-        self.is_player = True
-        self.moving_up = False
-        self.moving_down = False
-        self.moving_left = False
-        self.moving_right = False
-```
-
-**Usage**: Marks an entity as the player and tracks input state
-
----
-
-## Data Flow
-
-### Game Loop Flow
-
-```
-run.py (main loop)
-│
-├─→ pygame event handling
-│   └─→ Quit on QUIT event
-│
-├─→ screen.fill(BLACK)  // Clear screen
-│
-├─→ camera_system.update(target_x, target_y)
-│   └─→ camera.follow_target()  // Update camera position
-│
-├─→ rendering_system.render()
-│   ├─→ Get all tile entities
-│   ├─→ For each tile:
-│   │   ├─→ Calculate screen position (world pos - camera pos)
-│   │   └─→ pygame.draw.rect()
-│   └─→ Returns
-│
-└─→ pygame.display.update()  // Show frame
-```
-
-### Entity Creation Flow (Startup)
-
-```
-run.py
-│
-├─→ MapFactory.load_map("forest")
-│   ├─→ Read forest.json
-│   ├─→ Parse tile characters ("#", ".", "~")
-│   └─→ For each tile character:
-│       └─→ entity_manager.add_entity(
-│           entity_id="tile_row_col",
-│           components={
-│               "position": PositionComponent(...),
-│               "tile": TileComponent(...)
-│           }
-│       )
-│
-├─→ PlayerFactory.create_player(entity_manager, x=400, y=300)
-│   └─→ entity_manager.add_entity(
-│       entity_id="player",
-│       components={
-│           "position": PositionComponent(400, 300),
-│           "velocity": VelocityComponent(0, 0),
-│           "player_component": PlayerComponent(),
-│           "tile": TileComponent(...)
-│       }
-│   )
-│
-└─→ Initialize systems and game loop starts
-```
-
-### Complete Game Loop Flow
-
-```
 while True:
-│
-├─→ event_handler_system.process_events(pygame.event.get())
-│   └─→ Updates player velocity based on input
-│
-├─→ movement_system.update(delta_time=1/60)
-│   └─→ Updates all entity positions based on velocity
-│
-├─→ Get player position for camera
-│   └─→ player = entity_manager.get_entity_by_id("player")
-│
-├─→ camera_system.update(target_x=player.x, target_y=player.y)
-│   └─→ Updates camera position to follow player
-│
-├─→ screen.fill(BLACK)
-│   └─→ Clears the screen
-│
-├─→ rendering_system.render()
-│   └─→ Draws all entities with camera offset applied
-│
-└─→ pygame.display.update()
-    └─→ Shows the frame
+    milliseconds = clock.tick(FPS)
+    time_accumulator += milliseconds / 1000.0
+    
+    while time_accumulator >= FIXED_DELTA_TIME:
+        movement_system.update(FIXED_DELTA_TIME)
+        time_accumulator -= FIXED_DELTA_TIME
+    
+    rendering_system.render()
 ```
 
 ---
@@ -578,244 +216,175 @@ while True:
 
 ### 1. Camera as System, Not Entity ✅
 
-**Decision**: Camera is managed directly by `CameraSystem`, not added to `EntityManager`
+Camera is managed by `CameraSystem`, not `EntityManager`. It's a singleton—simpler and more efficient than entity overhead.
 
-**Why**:
-- Camera is a **singleton** - only one per game
-- Simpler to manage globally
-- Avoids unnecessary entity overhead
-- Still follows ECS principles (system manages component)
+**When to change**: Multi-camera support (split-screen, multiple viewports)
 
-**Alternative**: Camera could be an entity with components, but that's overkill for a single camera
+### 2. Entity Factories Outside ECS ✅
 
-**When you'd change this**:
-- Split-screen multiplayer (multiple cameras)
-- Multiple camera modes (zoom, rotation)
+`MapFactory` and `PlayerFactory` exist outside core, creating entities separately.
 
----
-
-### 2. Entity Factories Outside Entity Manager ✅
-
-**Decision**: `PlayerFactory` and `MapFactory` exist outside the ECS core, creating entities separately
-
-**Why**:
-- **Separation of concerns**: Entity creation is distinct from entity management
-- **Reusability**: Factories can be called multiple times (e.g., spawn enemies)
-- **Testability**: Can test factory behavior independently
-- **Clarity**: `run.py` shows explicitly what entities are created
-- **Follows Single Responsibility**: EntityManager manages entities, factories create them
-
-**Pattern**:
-```python
-# Factory only creates entities
-class PlayerFactory:
-    @staticmethod
-    def create_player(entity_manager, x, y):
-        # Create entity with all necessary components
-        entity_manager.add_entity("player", components)
-
-# In run.py - clear bootstrap flow
-MapFactory.load_map(entity_manager, "forest")
-PlayerFactory.create_player(entity_manager, 400, 300)
-```
-
-**When you'd change this**:
-- Runtime entity spawning (enemies, items) - still use factories, pass entity_manager
-- Dynamic entity pools - create a factory that manages a pool
-
----
+**Benefits**:
+- Clear separation: Factories create, EntityManager manages
+- Reusable: Can spawn entities multiple times
+- Testable: Factory behavior independent of manager
 
 ### 3. MapFactory as Utility, Not System ✅
 
-**Decision**: `MapFactory` exists outside ECS core
+`MapFactory` is a one-time loader, not a continuous system (systems run every frame).
 
-**Why**:
-- It's a **one-time initialization tool**, not a continuous system
-- Doesn't need to run every frame
-- Doesn't read/modify runtime components
+### 4. Screen-Based Camera ✅
 
-**What it does**:
-- Reads files (IO operation)
-- Creates entities in batch
-- Then it's done
+Camera snaps in discrete jumps (Zelda-style), not smooth movement.
 
-**Why it's not a system**:
-- Systems process entities each frame
-- MapFactory is more of a **factory/loader pattern**
-
----
-
-### 4. Screen-Based Camera Movement ✅
-
-**Decision**: Camera snaps in discrete jumps when target exceeds trigger margin
-
-**Why**:
-- Classic game feel (Zelda-style)
-- Simple to implement
-- Performance-friendly
+**Benefits**:
+- Classic game feel
+- Simple implementation
 - Interesting gameplay mechanic
-
-**Trigger Margin Logic**:
-```
-If distance from screen center > margin:
-    Snap camera to new position
-Else:
-    Keep camera still
-```
-
-**Future Evolution**: Could add smooth lerp movement while maintaining this screen-based behavior
-
----
 
 ### 5. Constants in Separate Module ✅
 
-**Decision**: Game configuration lives in `helpers/constants.py`
+Configuration in `helpers/constants.py` for easy balancing.
 
-**Why**:
-- Single source of truth
-- Easy to balance game (tweak values without code changes)
-- Can load from JSON later
-- Follows DRY principle
+### 6. State-Based Input ✅
 
-**Config Examples**:
-- `TILE_SIZE`: Affects all rendering
-- `CAMERA_TRIGGER_MARGIN`: Controls camera behavior
-- `TILE_COLORS`: Visual style
-- `SPEED`: Player movement speed
+Uses `pygame.key.get_pressed()` for smooth, continuous movement (not event-based).
 
----
-
-### 6. Input Handling with Key States ✅
-
-**Decision**: `EventHandlerSystem` uses `pygame.key.get_pressed()` for continuous input detection
-
-**Why**:
-- **Smooth movement**: Player moves continuously while key is held
-- **Frame-independent**: Works correctly at any frame rate
-- **Multi-key support**: Can detect multiple keys pressed simultaneously (for diagonal movement)
-- **Better feel**: No input lag or jerkiness
-
-**Alternative (Event-Based - Avoided)**:
-```python
-# ❌ NOT RECOMMENDED - causes jerky movement
-if event.type == KEYDOWN:
-    player.move()  # Only moves once per key press
-```
-
-**Current Approach (State-Based)**:
-```python
-# ✅ RECOMMENDED - smooth continuous movement
-keys = pygame.key.get_pressed()
-if keys[K_w]:
-    velocity.vy -= SPEED  # Moves every frame while held
-```
-
-**Future Enhancement**: Could add diagonal movement optimization (move_up + move_left = diagonal)
+**Benefits**:
+- No input lag
+- Multi-key support (diagonal movement)
+- Smooth player control
 
 ---
 
 ## How to Extend
 
-### Adding a New Component
+### Add a New Component
 
 ```python
-# 1. Create file: ecs/components/velocity.py
-class VelocityComponent:
-    def __init__(self, vx=0.0, vy=0.0):
-        self.vx = vx
-        self.vy = vy
+# src/ecs/components/health.py
+class HealthComponent:
+    def __init__(self, max_hp=100):
+        self.max_hp = max_hp
+        self.current_hp = max_hp
+    
+    def take_damage(self, damage):
+        self.current_hp -= damage
 
-# 2. Add to entity when creating it
+# Add to entity when creating
 components = {
     "position": PositionComponent(...),
-    "velocity": VelocityComponent(vx=5.0, vy=0.0)
+    "health": HealthComponent(max_hp=100)
 }
-entity_manager.add_entity(entity_id, components)
 ```
 
-### Adding a New System
+### Add a New System
 
 ```python
-# 1. Create file: ecs/systems/movement_system.py
-class MovementSystem:
+# src/ecs/systems/damage_system.py
+class DamageSystem:
     def __init__(self, entity_manager):
         self.entity_manager = entity_manager
     
-    def update(self, delta_time):
-        # Get all entities with position and velocity
-        moving_entities = self.entity_manager.get_entities_with_component("velocity")
-        
-        for entity_id, velocity in moving_entities:
-            position = self.entity_manager.get_entity_by_id(entity_id)["position"]
-            
-            # Update position based on velocity
-            position.x += velocity.vx * delta_time
-            position.y += velocity.vy * delta_time
+    def update(self):
+        entities = self.entity_manager.get_entities_with_components(['health'])
+        for entity_id, components in entities:
+            health = components['health']
+            if not health.is_alive():
+                # Process dead entities
 
-# 2. Initialize in run.py
-movement_system = MovementSystem(entity_manager)
-
-# 3. Call each frame
-movement_system.update(delta_time)
+# Initialize in run.py and call in game loop
 ```
 
-### Adding a New Tile Type
+### Add a New Tile Type
 
 ```python
-# 1. Update helpers/constants.py
-FOREST = 4  # New tile type
-TILE_COLORS[FOREST] = (139, 69, 19)  # Brown
+# constants.py
+FOREST = 4
+TILE_COLORS[FOREST] = (139, 69, 19)
 
-# 2. Update map_loader.py conversion
+# map_loader.py
 value_conversion = {
     '.': GRASS,
     '~': WATER,
     '#': SAND,
-    'T': FOREST  # New character in maps
+    'T': FOREST
 }
-
-# 3. Use in map JSON
-"# # # T T T #"
 ```
 
-### Adding a New System to Game Loop
+---
+
+## Game Loop Flow
 
 ```python
-# In run.py
-
-# Initialize
-my_system = MySystem(...)
-
-# In game loop
 while True:
-    # ... event handling ...
+    # Step 1: Timing
+    milliseconds_elapsed = clock.tick(FPS)
+    time_accumulator += milliseconds_elapsed / 1000.0
     
-    my_system.update(...)  # ← Add here
+    # Step 2: Input
+    event_handler_system.process_events(pygame.event.get())
+    
+    # Step 3: Physics (fixed timestep)
+    while time_accumulator >= FIXED_DELTA_TIME:
+        movement_system.update(FIXED_DELTA_TIME)
+        time_accumulator -= FIXED_DELTA_TIME
+    
+    # Step 4: Camera
+    player = entity_manager.get_entity_by_id("player")
+    camera_system.update(player["position"].x, player["position"].y)
+    
+    # Step 5: Rendering
+    screen.fill((0, 0, 0))
     rendering_system.render()
-    
     pygame.display.update()
 ```
 
 ---
 
-## Key Takeaways
+## Debugging Tips
 
-1. **ECS separates data from logic** - components store data, systems process it
-2. **EntityManager is the hub** - all systems go through it to access entities
-3. **Systems run every frame** - utilities like MapFactory don't
-4. **Camera is special** - it's a singleton, not an entity
-5. **Extend by adding components + systems** - don't modify existing ones
+### Check Entity State
+```python
+# See what components an entity has
+player = entity_manager.get_entity_by_id("player")
+print(player.keys())  # ['position', 'velocity', 'player', 'sprite']
+```
+
+### Query Entities
+```python
+# Get all moving entities
+moving = entity_manager.get_entities_with_components(['velocity'])
+
+# Get all tiles
+tiles = entity_manager.get_entities_with_components(['tile'])
+```
+
+### Collision Debug
+- Look for collision detection messages (enabled in CollisionSystem)
+- Check that non-walkable tiles have `is_walkable() = False`
+- Verify collision box dimensions match sprite size
 
 ---
 
 ## Next Steps
 
-Suggested features to implement:
-1. **Player entity** with Position and Tile components
-2. **Input system** to move player based on keyboard
-3. **Collision system** to prevent player from walking through walls
-4. **Animation system** for sprite animation
-5. **Audio system** for sound effects
-6. **Inventory system** for game items
+See **[ROADMAP.md](ROADMAP.md)** for planned features and completed phases.
 
-Good luck! 🚀
+Current focus areas:
+1. Sprite rendering (load PNG images)
+2. Enemy AI
+3. Inventory system
+4. Combat mechanics
+5. Audio system
+
+---
+
+## Key Concepts
+
+- **Delta Time** - Elapsed seconds, ensures frame-rate independent movement
+- **Fixed Timestep** - Physics always uses 1/FPS for deterministic behavior
+- **AABB Collision** - Axis-Aligned Bounding Box, simple rectangle overlap test
+- **Entity Composition** - Entities are collections of components, not class hierarchies
+- **System-Driven** - Logic flows through systems, not objects
+
