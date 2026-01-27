@@ -299,6 +299,66 @@ Frame 2: accumulator += 33.33
          accumulator = 16.65 (carried to next frame)
 ```
 
+### When Does the Accumulator Matter?
+
+**Important clarification**: The accumulator is only beneficial when actual FPS **deviates** from target FPS.
+
+**At exact target FPS** (e.g., FPS=60, always hitting 60 FPS):
+
+```python
+FPS = 60
+_FIXED_DELTA_TIME = 1/60 = 0.01667
+clock.tick(60)  # Returns ~16.67ms
+
+Frame 1:
+  milliseconds_elapsed = 16.67
+  delta_time = 0.01667
+  time_accumulator = 0.01667
+  
+  while 0.01667 >= 0.01667: YES
+    movement_system.update(0.01667)
+    time_accumulator = 0 - 0.01667 = 0
+  
+  Result: Physics runs exactly once per frame
+```
+
+**This is the same as just calling `movement_system.update()` directly!**
+
+The accumulator only shows its value when:
+
+1. **FPS drops below target** (lag spike):
+   ```python
+   FPS target = 60
+   Frame takes 33ms (lag spike) instead of 16.67ms
+   
+   time_accumulator = 0.033
+   while 0.033 >= 0.01667: YES (run 1)
+     time_accumulator = 0.01663
+   while 0.01663 >= 0.01667: NO
+   
+   Result: Physics runs TWICE to catch up
+   ```
+
+2. **Rendering FPS is different from physics FPS**:
+   ```python
+   FPS = 60 (physics target)
+   But rendering at 120 FPS (faster computer)
+   
+   Each frame: delta_time ≈ 8.33ms
+   time_accumulator only triggers every 2 frames
+   
+   Result: Physics runs half as often as rendering
+   ```
+
+**Without the while loop accumulator**, if you just called `movement_system.update()` every frame with FPS=60:
+- At 60 FPS: Physics runs 60 times/second ✓
+- At lag spike (30 FPS): Physics runs 30 times/second ✗ (Physics should run 60 times to catch up!)
+- At 120 FPS: Physics runs 120 times/second ✗ (2× too fast!)
+
+**With the accumulator**, physics always targets the correct rate regardless of actual FPS.
+
+**TL;DR**: If your game **always** hits exactly the target FPS with no variance, the accumulator doesn't change behavior. But in real-world conditions with lag spikes and performance variation, the accumulator ensures physics stays synchronized.
+
 ---
 
 ## Velocity Units

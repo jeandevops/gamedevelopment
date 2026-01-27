@@ -2,7 +2,7 @@ from ecs.entity_manager import EntityManager
 from ecs.components.tile import TileComponent  
 from ecs.components.position import PositionComponent
 from ecs.components.sprite import SpriteComponent
-from helpers.constants import MAPS_PATH, TILE_SIZE, GRASS, SAND, WATER
+from helpers.constants import MAPS_PATH, TILE_SIZE, GRASS, SAND, WATER, WOOD
 import json
 
 class MapFactory:
@@ -35,7 +35,8 @@ class MapFactory:
         value_conversion = {
             '.': GRASS,
             '~': WATER,
-            '#': SAND
+            '^': SAND,
+            '#': WOOD
         }
 
         self.map_data = json.loads(self.map_data)

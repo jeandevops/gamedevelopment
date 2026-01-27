@@ -1,4 +1,5 @@
 import pygame
+import time
 
 from sys import exit
 
@@ -29,7 +30,7 @@ map_factory = MapFactory()
 map_factory.load_map(entity_manager, "forest")
 
 # Create player
-PlayerFactory.create_player(entity_manager, x=0, y=0)
+PlayerFactory.create_player(entity_manager, x=32, y=32)
 
 # Initialize camera
 camera_component = CameraComponent(x=0, y=0, viewport_width=CAMERA_WIDTH, viewport_height=CAMERA_HEIGHT)
@@ -54,6 +55,7 @@ while True:
     # Get elapsed time since last frame and limit to target FPS
     milliseconds_elapsed = clock.tick(FPS)
     delta_time = milliseconds_elapsed / 1000.0
+    time.sleep(0.01)
     
     # Accumulate time
     time_accumulator += delta_time
