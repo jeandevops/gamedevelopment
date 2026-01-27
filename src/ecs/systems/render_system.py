@@ -1,6 +1,6 @@
 from ecs.entity_manager import EntityManager
 from ecs.components.camera import CameraComponent
-from helpers.constants import TILE_COLORS, TILE_SIZE
+from helpers.constants import TILE_COLORS
 import pygame
 
 class RenderingSystem:

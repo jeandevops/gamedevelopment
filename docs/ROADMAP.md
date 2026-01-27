@@ -248,11 +248,11 @@ This document tracks the development progress of the tile-based game engine. It 
 ## Planned Features (Next Phases)
 
 ### Phase 8: Collision System (Next)
-- [ ] Create `CollisionComponent`
-- [ ] Implement `CollisionSystem`
-- [ ] Prevent player from walking through walls (#)
-- [ ] Player can only walk on GRASS tiles
-- [ ] Implement tile walkability checks
+- ✅ Create `CollisionComponent`
+- ✅ Implement `CollisionSystem`
+- ✅ Prevent player from walking through walls (#)
+- ✅ Player can only walk on GRASS and SAND tiles
+- ✅ Implement tile walkability checks
 
 ### Phase 9: Sprite System
 - [ ] Replace colored rectangles with sprites

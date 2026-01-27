@@ -2,6 +2,7 @@ from helpers.constants import SPEED
 from ecs.entity_manager import EntityManager
 import pygame
 from pygame.locals import QUIT, K_w, K_s, K_a, K_d
+from sys import exit
 
 class EventHandlerSystem:
     def __init__(self, entity_manager: EntityManager):

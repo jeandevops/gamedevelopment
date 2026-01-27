@@ -1,7 +1,4 @@
 import pygame
-import time
-
-from sys import exit
 
 # Utils
 from helpers.constants import CAMERA_WIDTH, CAMERA_HEIGHT, FPS
@@ -55,7 +52,6 @@ while True:
     # Get elapsed time since last frame and limit to target FPS
     milliseconds_elapsed = clock.tick(FPS)
     delta_time = milliseconds_elapsed / 1000.0
-    time.sleep(0.01)
     
     # Accumulate time
     time_accumulator += delta_time

@@ -2,8 +2,6 @@ from ecs.components.position import PositionComponent
 from ecs.components.velocity import VelocityComponent
 from ecs.components.player import PlayerComponent
 from ecs.components.sprite import SpriteComponent
-from helpers.constants import WATER
-
 
 class PlayerFactory:
     """Factory for creating player entities"""

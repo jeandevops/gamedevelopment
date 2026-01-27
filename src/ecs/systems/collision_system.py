@@ -1,5 +1,4 @@
 from ecs.entity_manager import EntityManager
-from helpers.constants import TILE_SIZE
 
 class CollisionSystem:
     def __init__(self, entity_manager: EntityManager):
@@ -11,7 +10,7 @@ class CollisionSystem:
         moving_entity = self.entity_manager.get_entity_by_id(entity_id)
         moving_sprite = moving_entity["sprite"]
 
-        for tile_entity_id, tile_components in tiles:
+        for _tile_entity_id, tile_components in tiles:
             tile_component = tile_components["tile"]
             if not tile_component.is_walkable:
                 # Check if this specific tile actually collides
