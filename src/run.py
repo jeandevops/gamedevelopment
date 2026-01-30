@@ -59,17 +59,8 @@ while True:
     # Process input events
     event_handler_system.process_events(pygame.event.get())
     
-    # Update game logic with fixed timestep
-    # This runs physics at consistent 1/FPS regardless of the users processor actual frame rate.
-    # Example:
-    # For 60 FPS (16.67ms per frame) and rendering at 120 FPS (8.3ms per frame):
-    # Main Loop (crazy fast):     [frame] [frame] [frame] [frame] [frame] ...
-    #                              8.3ms   8.3ms   8.3ms   8.3ms   8.3ms
-    # 
-    # Accumulator grows:           8.3  →  16.6  →  24.9  →  33.2  → ...
-    # 
-    # Physics runs when ≥16.67ms:              ↓ RUN          ↓ RUN
-    #                             (accumulator = 0)  (accumulator = 8.3)
+    # Update movement with fixed timestep, using time_accumulator as a buffer
+    # to prevent inconsistent moves during lag spikes
     while time_accumulator >= _FIXED_DELTA_TIME:
         movement_system.update(delta_time=_FIXED_DELTA_TIME)
         time_accumulator -= _FIXED_DELTA_TIME
