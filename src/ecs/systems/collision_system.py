@@ -6,15 +6,27 @@ class CollisionSystem:
 
     def check_collision_with_tiles(self, entity_id: str, new_x: float, new_y: float) -> bool:
         """Checks if the entity at new_x and new_y collides with any non-walkable tiles"""
-        tiles = self.entity_manager.get_entities_with_components(["tile", "position", "sprite"])
+        tiles = self.entity_manager.get_entities_with_components(["tile", "position"])
         moving_entity = self.entity_manager.get_entity_by_id(entity_id)
-        moving_sprite = moving_entity["sprite"]
+
+        if not moving_entity:
+            return False  # Entity not found, no collision
+        
+        if "sprite" not in moving_entity and "animated_sprite" not in moving_entity:
+            return False  # No sprite to check collision against
+        
+        moving_sprite = moving_entity.get("sprite") or moving_entity.get("animated_sprite")
 
         for _tile_entity_id, tile_components in tiles:
             tile_component = tile_components["tile"]
             if not tile_component.is_walkable:
                 # Check if this specific tile actually collides
-                if self._calculate_collision(tile_components["position"], tile_components["sprite"], moving_sprite, new_x, new_y):
+                tile_component_sprite = tile_components.get("sprite") or tile_components.get("animated_sprite")
+                if self._calculate_collision(tile_position=tile_components["position"],
+                                             tile_sprite=tile_component_sprite,
+                                             collider_sprite=moving_sprite,
+                                             collider_new_x=new_x,
+                                             collider_new_y=new_y):
                     return True  # Collision detected!
         
         return False  # No collision

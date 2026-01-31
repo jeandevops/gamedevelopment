@@ -13,18 +13,25 @@ class RenderingSystem:
         """Renders all tiles onto the screen"""
 
         tiles = self._retrieve_tiles()
-        for entity_id, tile_components in tiles:
+        for _entity_id, tile_components in tiles:
             tile_color = self._get_tile_color(tile_components["tile"].tile_type)
-            pygame.draw.rect(
-                self.screen,
-                tile_color,
-                pygame.Rect(
+            if tile_components.get("animated_sprite"):
+                tile_components["animated_sprite"].sprite.rect.topleft = (
                     tile_components["position"].x - self.camera_component.x,
-                    tile_components["position"].y - self.camera_component.y,
-                    tile_components["sprite"].width,
-                    tile_components["sprite"].height
+                    tile_components["position"].y - self.camera_component.y
                 )
-            )
+                self.screen.blit(tile_components["animated_sprite"].sprite.current_image, tile_components["animated_sprite"].sprite.rect)
+            else:
+                pygame.draw.rect(
+                    self.screen,
+                    tile_color,
+                    pygame.Rect(
+                        tile_components["position"].x - self.camera_component.x,
+                        tile_components["position"].y - self.camera_component.y,
+                        tile_components["sprite"].width,
+                        tile_components["sprite"].height
+                    )
+                )
 
         player = self.entity_manager.get_entity_by_id("player")
         pygame.draw.rect(
