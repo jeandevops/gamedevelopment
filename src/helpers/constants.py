@@ -5,6 +5,8 @@ SAND = 2
 WATER = 3
 
 MAPS_PATH = "assets/maps/"
+TERRAIN_SPRITES_PATH = "assets/sprites/texture/"
+TILE_SET_SPRITE_FILE = "tx-tileset-grass.png"
 
 TILE_SIZE = {
     "width": 32,
@@ -25,3 +27,4 @@ CAMERA_HEIGHT = 600
 
 SPEED = 240
 FPS = 30
+DEFAULT_ANIMATION_FRAME_DURATION = 150  # in milliseconds
