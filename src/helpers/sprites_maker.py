@@ -9,16 +9,12 @@ class AnimatedSprite(pygame.sprite.Sprite):
     def __init__(self, file_path: str, file_name: str, coordinate_x: int, coordinate_y: int, width: int, height: int, horizontal_steps: int=0, vertical_steps: int=0):
         pygame.sprite.Sprite.__init__(self)
         self.images = self._load_images(file_path, file_name, coordinate_x, coordinate_y, width, height, horizontal_steps, vertical_steps)
-        self.index = 0
-        self.current_image = self.images[self.index]
+        self.current_image = self.images[0]
         self.rect = self.current_image.get_rect()
     
-    def update(self):
-        """Update the grass sprite animation frame"""
-        self.index += 1
-        if self.index >= len(self.images):
-            self.index = 0
-        self.current_image = self.images[self.index]
+    def get_frame(self, frame_index: int) -> pygame.Surface:
+        """Returns the image at the specified frame index (stateless)"""
+        return self.images[frame_index % len(self.images)]
 
     def _load_images(self, file_path: str, file_name: str, coordinate_x: int, coordinate_y: int, width: int, height: int, horizontal_steps: int, vertical_steps: int) -> list[pygame.Surface]:
         """Loads grass tile images"""

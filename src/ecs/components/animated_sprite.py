@@ -10,6 +10,7 @@ class AnimatedSpriteComponent:
         self.animate = True
         self.elapsed_time = 0.0
         self.frame_duration = DEFAULT_ANIMATION_FRAME_DURATION
+        self.frame_index = 0  # Each component tracks its own frame
 
     def disable_animation(self) -> None:
         """Disables the animation"""

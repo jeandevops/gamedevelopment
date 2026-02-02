@@ -14,5 +14,12 @@ class AnimationSystem:
             animated_sprite.elapsed_time += delta_time * 1000  # Convert to milliseconds
 
             if animated_sprite.elapsed_time >= animated_sprite.frame_duration:
-                animated_sprite.sprite.update()
+                # Advance the frame index (each component has its own)
+                animated_sprite.frame_index += 1
+                if animated_sprite.frame_index >= len(animated_sprite.sprite.images):
+                    animated_sprite.frame_index = 0
+                
+                # Update the sprite's current_image to match this component's frame
+                animated_sprite.sprite.current_image = animated_sprite.sprite.get_frame(animated_sprite.frame_index)
+                
                 animated_sprite.elapsed_time = 0.0
