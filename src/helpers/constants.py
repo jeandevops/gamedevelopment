@@ -13,13 +13,6 @@ TILE_SIZE = {
     "height": 32
 }
 
-TILE_COLORS = {
-    GRASS: (34, 139, 34),    # Forest green
-    SAND: (184, 134, 11),    # Dark goldenrod
-    WATER: (0, 100, 200),    # Ocean blue
-    WOOD: (139, 69, 19)      # Saddle brown
-}
-
 CAMERA_TRIGGER_MARGIN = 200
 
 CAMERA_WIDTH = 800

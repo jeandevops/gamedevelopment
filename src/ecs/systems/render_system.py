@@ -10,11 +10,12 @@ class RenderingSystem:
         self.camera_component = camera_component
 
     def render(self):
-        """Renders all tiles onto the screen"""
+        """Renders all onto the screen"""
 
+
+        # Render tiles:
         tiles = self._retrieve_tiles()
         for _entity_id, tile_components in tiles:
-            tile_color = self._get_tile_color(tile_components["tile"].tile_type)
             if tile_components.get("animated_sprite"):
                 tile_components["animated_sprite"].sprite.rect.topleft = (
                     tile_components["position"].x - self.camera_component.x,
@@ -24,7 +25,7 @@ class RenderingSystem:
             else:
                 pygame.draw.rect(
                     self.screen,
-                    tile_color,
+                    (255, 0, 255),  # Magenta for missing sprite
                     pygame.Rect(
                         tile_components["position"].x - self.camera_component.x,
                         tile_components["position"].y - self.camera_component.y,
@@ -33,6 +34,7 @@ class RenderingSystem:
                     )
                 )
 
+        # Render player (for now, rendering as red rectangle)
         player = self.entity_manager.get_entity_by_id("player")
         pygame.draw.rect(
             self.screen,
@@ -49,7 +51,3 @@ class RenderingSystem:
         """Retrieves all tile entities from the EntityManager"""
         tiles = self.entity_manager.get_entities_with_components(["tile"])
         return tiles
-
-    def _get_tile_color(self, tile_type: int):
-        """Returns the color associated with a tile type"""
-        return TILE_COLORS.get(tile_type, (255, 0, 255))  # Default to magenta for unknown types
