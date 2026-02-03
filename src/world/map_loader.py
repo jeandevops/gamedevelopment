@@ -2,7 +2,15 @@ from ecs.entity_manager import EntityManager
 from ecs.components.tile import TileComponent  
 from ecs.components.position import PositionComponent
 from ecs.components.animated_sprite import AnimatedSpriteComponent
-from helpers.constants import MAPS_PATH, TILE_SIZE, GRASS, SAND, WATER, WOOD, TILE_SET_SPRITE_FILE, TERRAIN_SPRITES_PATH
+from helpers.constants import (
+    MAPS_PATH, TILE_SIZE, GRASS, SAND, WATER, WOOD, TILE_SET_SPRITE_FILE, TERRAIN_SPRITES_PATH,
+    ERROR_MAP_FILE_NOT_FOUND,
+    ERROR_MAP_READ_FAILED,
+    ERROR_MAP_PARSE_FAILED,
+    ERROR_MAP_EMPTY,
+    ERROR_TILE_LOADING_FAILED,
+)
+from helpers.logger import logger
 import os
 from world.sprites_maker import AnimatedSprite
 import json
@@ -11,19 +19,29 @@ from typing import Any
 class SpritePool:
     def __init__(self):
         """ Initializes the sprite pool with preloaded sprites for different tile types """
+        logger.debug("Initializing sprite pool...")
         root_path = os.path.dirname(os.path.abspath(__file__))
         terrain_textures_path = os.path.join(root_path, "..", *TERRAIN_SPRITES_PATH.split("/"))
 
-        sprites_pool = {
-            GRASS: AnimatedSprite(file_path = terrain_textures_path, file_name=TILE_SET_SPRITE_FILE, coordinate_x=0, coordinate_y=0, width=TILE_SIZE["width"], height=TILE_SIZE["height"], horizontal_steps=4),
-            WATER: AnimatedSprite(file_path = terrain_textures_path, file_name=TILE_SET_SPRITE_FILE, coordinate_x=0, coordinate_y=128, width=TILE_SIZE["width"], height=TILE_SIZE["height"], horizontal_steps=2),
-            SAND: AnimatedSprite(file_path = terrain_textures_path, file_name=TILE_SET_SPRITE_FILE, coordinate_x=128, coordinate_y=96, width=TILE_SIZE["width"], height=TILE_SIZE["height"], horizontal_steps=3),
-            WOOD: AnimatedSprite(file_path = terrain_textures_path, file_name=TILE_SET_SPRITE_FILE, coordinate_x=0, coordinate_y=128, width=TILE_SIZE["width"], height=TILE_SIZE["height"], horizontal_steps=2)
-        }
-        self.pool = sprites_pool
+        try:
+            sprites_pool = {
+                GRASS: AnimatedSprite(file_path = terrain_textures_path, file_name=TILE_SET_SPRITE_FILE, coordinate_x=0, coordinate_y=0, width=TILE_SIZE["width"], height=TILE_SIZE["height"], horizontal_steps=4),
+                WATER: AnimatedSprite(file_path = terrain_textures_path, file_name=TILE_SET_SPRITE_FILE, coordinate_x=0, coordinate_y=128, width=TILE_SIZE["width"], height=TILE_SIZE["height"], horizontal_steps=2),
+                SAND: AnimatedSprite(file_path = terrain_textures_path, file_name=TILE_SET_SPRITE_FILE, coordinate_x=128, coordinate_y=96, width=TILE_SIZE["width"], height=TILE_SIZE["height"], horizontal_steps=3),
+                WOOD: AnimatedSprite(file_path = terrain_textures_path, file_name=TILE_SET_SPRITE_FILE, coordinate_x=0, coordinate_y=128, width=TILE_SIZE["width"], height=TILE_SIZE["height"], horizontal_steps=2)
+            }
+            self.pool = sprites_pool
+            logger.info(f"Sprite pool initialized with {len(sprites_pool)} sprite types")
+        except Exception as e:
+            logger.critical(f"Failed to initialize sprite pool: {e}")
+            raise
 
     def get_sprite(self, tile_type: int) -> AnimatedSprite | None:
-        return self.pool.get(tile_type)
+        """Get sprite from pool by tile type"""
+        sprite = self.pool.get(tile_type)
+        if not sprite:
+            logger.warning(f"No sprite found for tile type: {tile_type}")
+        return sprite
         
 class MapFactory:
     def __init__(self):
@@ -31,27 +49,42 @@ class MapFactory:
 
     def load_map(self, entity_manager: EntityManager, map_name: str) -> None:
         """Parses the map data and add tiles entities to the EntityManager"""
+        logger.info(f"Loading map: {map_name}")
+        
         try:
             with open(f"{MAPS_PATH}{map_name}.json", "r") as file:
                 self.map_data = file.read()
+                logger.debug(f"Map file read successfully: {map_name}.json")
         except FileNotFoundError:
-            raise FileNotFoundError(f"Map file '{map_name}.json' not found in path '{MAPS_PATH}'")
+            error_msg = ERROR_MAP_FILE_NOT_FOUND.format(map_name=map_name)
+            logger.error(error_msg)
+            raise FileNotFoundError(error_msg)
         except IOError as e:
-            raise RuntimeError(f"An error occurred while reading the map file: {e}")
+            error_msg = ERROR_MAP_READ_FAILED.format(map_name=map_name, error=str(e))
+            logger.error(error_msg)
+            raise RuntimeError(error_msg)
         
         sprites_pool = SpritePool()
 
         try:
             parsed_map_data = self._parse_map_data()
+            logger.debug(f"Map parsed: {len(parsed_map_data)} rows")
         except json.JSONDecodeError as e:
-            raise RuntimeError(f"Error parsing map JSON data: {e}")
+            error_msg = ERROR_MAP_PARSE_FAILED.format(error=str(e))
+            logger.error(error_msg)
+            raise RuntimeError(error_msg)
         except Exception as e:
-            raise RuntimeError(f"An unexpected error occurred while parsing map data: {e}")
+            error_msg = ERROR_MAP_PARSE_FAILED.format(error=str(e))
+            logger.error(error_msg)
+            raise RuntimeError(error_msg)
 
-        if not parsed_map_data:
-            raise ValueError("Parsed map data is empty or invalid.")
+        if not parsed_map_data or (parsed_map_data and not parsed_map_data[0]):
+            error_msg = ERROR_MAP_EMPTY
+            logger.error(error_msg)
+            raise ValueError(error_msg)
         
         try:
+            tile_count = 0
             for row_index, row in enumerate(parsed_map_data):
                 for col_index, tile_type in enumerate(row):
                     entity_id = f"tile_{row_index}_{col_index}"
@@ -59,7 +92,8 @@ class MapFactory:
                     tile = TileComponent(tile_type=tile_type)
                     animation = sprites_pool.get_sprite(tile_type)
                     if not animation:
-                        continue  # Skip if no sprite available for this tile type
+                        logger.warning(f"No sprite available for tile type {tile_type} at ({row_index}, {col_index}), skipping")
+                        continue
                     animated_sprite = AnimatedSpriteComponent(animation)
                     components = {
                         "position": position,
@@ -67,8 +101,12 @@ class MapFactory:
                         "animated_sprite": animated_sprite
                     }
                     entity_manager.add_entity(entity_id, components)
+                    tile_count += 1
+            logger.info(f"Map loaded successfully: {tile_count} tiles created")
         except Exception as e:
-            raise RuntimeError(f"An error occurred while creating tile entities: {e}")
+            error_msg = ERROR_TILE_LOADING_FAILED.format(error=str(e))
+            logger.error(error_msg)
+            raise RuntimeError(error_msg)
 
     def _parse_map_data(self) -> list[list[int]]:
         """Parses the raw map data into a usable format"""
