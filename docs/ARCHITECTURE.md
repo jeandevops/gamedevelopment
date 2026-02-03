@@ -4,10 +4,11 @@ A tile-based game engine built with **Entity Component System (ECS)** architectu
 
 ## Quick Navigation
 
-- **[SYSTEMS.md](SYSTEMS.md)** - How rendering, camera, input, movement, and collision work
-- **[COMPONENTS.md](COMPONENTS.md)** - Reference for Position, Tile, Camera, Velocity, Player, Sprite components
+- **[SYSTEMS.md](SYSTEMS.md)** - How rendering, camera, input, movement, collision, and animation work
+- **[COMPONENTS.md](COMPONENTS.md)** - Reference for Position, Tile, Camera, Velocity, Player, AnimatedSprite components
 - **[PHYSICS.md](PHYSICS.md)** - Delta time, fixed timestep, and frame-rate independent movement
-- **[ROADMAP.md](ROADMAP.md)** - Project phases and planned features
+- **[ANIMATION.md](ANIMATION.md)** - Sprite pooling, frame-rate independent animation, and timing
+- **[ROADMAP.md](ROADMAP.md)** - Project phases and progress tracking
 
 ---
 

@@ -9,6 +9,7 @@ Detailed documentation for all entity components.
 4. [VelocityComponent](#velocitycomponent)
 5. [PlayerComponent](#playercomponent)
 6. [SpriteComponent](#spritecomponent)
+7. [AnimatedSpriteComponent](#animatedspritecomponent)
 
 ---
 
@@ -351,6 +352,34 @@ width, height = player_sprite.get_dimensions()
 **Related Systems**:
 - `RenderingSystem` - uses width, height to draw; could use image_path for sprite rendering
 - `CollisionSystem` - uses width, height to calculate bounding box
+
+---
+
+## AnimatedSpriteComponent
+
+```python
+class AnimatedSpriteComponent:
+    sprite: AnimatedSprite          # Shared sprite (images)
+    frame_index: int                # Current frame
+    elapsed_time: float             # Time since last frame change (ms)
+    frame_duration: int             # Time per frame (ms, default 150)
+    animate: bool                   # Animation enabled?
+```
+
+**Key**: `sprite` is shared, `frame_index` is unique per tile
+
+### AnimatedSprite
+
+```python
+class AnimatedSprite(pygame.sprite.Sprite):
+    images: list[pygame.Surface]    # All frames
+    image: pygame.Surface           # Current frame (updated by AnimationSystem)
+
+    def get_frame(self, frame_index: int) -> pygame.Surface:
+        return self.images[frame_index % len(self.images)]
+```
+
+**Key**: Stateless (no animation logic)
 
 ---
 
