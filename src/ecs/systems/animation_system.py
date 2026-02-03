@@ -51,9 +51,3 @@ class AnimationSystem:
             error_msg = ERROR_ANIMATION_SYSTEM_FAILED.format(error=str(e))
             logger.error(error_msg)
             raise RuntimeError(error_msg)
-        except ValueError:
-            raise  # Re-raise ValueError as-is
-        except RuntimeError:
-            raise  # Re-raise RuntimeError as-is
-        except Exception as e:
-            raise RuntimeError(f"An error occurred during animation update: {e}")
