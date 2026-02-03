@@ -1,6 +1,5 @@
 from ecs.entity_manager import EntityManager
 from ecs.components.camera import CameraComponent
-from helpers.constants import TILE_COLORS
 import pygame
 
 class RenderingSystem:
@@ -21,7 +20,7 @@ class RenderingSystem:
                     tile_components["position"].x - self.camera_component.x,
                     tile_components["position"].y - self.camera_component.y
                 )
-                self.screen.blit(tile_components["animated_sprite"].sprite.current_image, tile_components["animated_sprite"].sprite.rect)
+                self.screen.blit(tile_components["animated_sprite"].sprite.image, tile_components["animated_sprite"].sprite.rect)
             else:
                 pygame.draw.rect(
                     self.screen,
@@ -36,14 +35,18 @@ class RenderingSystem:
 
         # Render player (for now, rendering as red rectangle)
         player = self.entity_manager.get_entity_by_id("player")
+
+        if not player:
+            return  # No player to render
+        
         pygame.draw.rect(
             self.screen,
             (255, 0, 0),
             pygame.Rect(
-                player["position"].x - self.camera_component.x,
-                player["position"].y - self.camera_component.y,
-                player["sprite"].width,
-                player["sprite"].height
+                player["position"].x - self.camera_component.x, # type: ignore
+                player["position"].y - self.camera_component.y, # type: ignore
+                player["sprite"].width, # type: ignore
+                player["sprite"].height # type: ignore
             )
         )
 
