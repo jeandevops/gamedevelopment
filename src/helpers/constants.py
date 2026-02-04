@@ -18,7 +18,9 @@ CAMERA_TRIGGER_MARGIN = 200
 CAMERA_WIDTH = 800
 CAMERA_HEIGHT = 600
 
-SPEED = 240
+SPEED = 240 # Character speed in pixels per second
+CAMERA_LERP_SPEED = 0.5 # Camera interpolation speed (higher is snappier, lower is smoother)
+
 FPS = 30
 DEFAULT_ANIMATION_FRAME_DURATION = 150  # in milliseconds
 

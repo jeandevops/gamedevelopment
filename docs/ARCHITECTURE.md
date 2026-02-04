@@ -8,6 +8,7 @@ A tile-based game engine built with **Entity Component System (ECS)** architectu
 - **[COMPONENTS.md](COMPONENTS.md)** - Reference for Position, Tile, Camera, Velocity, Player, AnimatedSprite components
 - **[PHYSICS.md](PHYSICS.md)** - Delta time, fixed timestep, and frame-rate independent movement
 - **[ANIMATION.md](ANIMATION.md)** - Sprite pooling, frame-rate independent animation, and timing
+- **[LERP_MATH.md](LERP_MATH.md)** - Linear interpolation math and delta time explained
 - **[ROADMAP.md](ROADMAP.md)** - Project phases and progress tracking
 
 ---

@@ -57,45 +57,48 @@ def render(self):
 
 ## CameraSystem
 
-**Purpose**: Updates camera position to follow a target with screen-based snapping
+**Purpose**: Updates camera position to smoothly follow a target with screen-based snapping and lerp interpolation
 
 **Dependencies**:
 - `CameraComponent`: The camera to update
-- Constants: `CAMERA_TRIGGER_MARGIN`
+- Constants: `CAMERA_TRIGGER_MARGIN`, `CAMERA_LERP_SPEED`
 
 **How it works**:
 ```
-1. Called each frame with target position
+1. Called each frame with target position and delta_time
 2. Checks if target is beyond trigger margin from screen center
-3. If yes, snaps camera to center target on screen
-4. Camera follows in discrete jumps (not smooth)
+3. If yes, calculates target position for camera
+4. Smoothly interpolates (lerps) camera toward target using delta_time
+5. Camera follows with smooth animation (not snapping)
 ```
 
-**Key Method**: `update(target_x, target_y)`
+**Key Method**: `update(target_x, target_y, delta_time)`
 ```python
-def update(self, target_x, target_y):
-    # Camera.follow_target() implements the snapping logic
-    self.camera.follow_target(target_x, target_y, self.trigger_margin)
+def update(self, target_x, target_y, delta_time):
+    self.camera.follow_target(target_x, target_y, self.trigger_margin, delta_time)
 ```
 
-**Camera Logic**:
+**Lerp Formula**:
 ```python
-# Current screen center
-screen_center_x = camera.x + viewport_width / 2
+# Calculate how much to move this frame
+movement_factor = lerp_speed * delta_time
+clamped_factor = min(movement_factor, 1.0)
 
-# Distance from center
-distance = abs(screen_center_x - target_x)
-
-# If target is beyond margin, snap camera
-if distance > trigger_margin:
-    camera.x = target_x - viewport_width / 2
+# Move camera toward target
+new_x = current_x + (target_x - current_x) * clamped_factor
 ```
+
+**Key Points**:
+- **Frame-rate independent**: Same animation speed at any FPS
+- **Delta-time based**: Movement proportional to time elapsed
+- **Clamped**: Prevents overshooting the target
+- **Independent axes**: X and Y lerp independently
 
 **Extension Points**:
-- Add smooth camera movement (lerp)
 - Add camera bounds (don't show beyond map edges)
 - Add camera shake effects
 - Support multiple targets (split-screen)
+- Add easing functions (ease-in, ease-out, etc.)
 
 ---
 

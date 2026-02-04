@@ -1,7 +1,7 @@
 import pygame
 
 # Utils
-from helpers.constants import CAMERA_WIDTH, CAMERA_HEIGHT, FPS
+from helpers.constants import CAMERA_WIDTH, CAMERA_HEIGHT, FPS, CAMERA_LERP_SPEED
 from world.map_loader import MapFactory
 from world.player_factory import PlayerFactory
 
@@ -31,7 +31,7 @@ map_factory.load_map(entity_manager, "forest")
 PlayerFactory.create_player(entity_manager, x=32, y=32)
 
 # Initialize camera
-camera_component = CameraComponent(x=0, y=0, viewport_width=CAMERA_WIDTH, viewport_height=CAMERA_HEIGHT)
+camera_component = CameraComponent(x=0, y=0, viewport_width=CAMERA_WIDTH, viewport_height=CAMERA_HEIGHT, lerp_speed=CAMERA_LERP_SPEED)
 camera_system = CameraSystem(camera_component)
 
 # Initialize systems
@@ -72,7 +72,7 @@ while True:
     if player:
         player_x = player["position"].x
         player_y = player["position"].y
-        camera_system.update(target_x=player_x, target_y=player_y)
+        camera_system.update(target_x=player_x, target_y=player_y, delta_time=delta_time)
     
     # Render
     screen.fill((0, 0, 0))

@@ -312,6 +312,18 @@ This document tracks the development progress of the tile-based game engine. It 
 - **Status**: Complete
 - **Files**: `docs/ANIMATION.md`
 
+#### ✅ 9.8 Camera Lerp (Smooth Following)
+- Implemented smooth camera interpolation in `CameraComponent`
+- Added `lerp_speed` parameter to camera (configurable in constants)
+- Frame-rate independent lerp using delta_time
+- Implemented `_lerp()` method with clamping to prevent overshoot
+- Modified `follow_target()` to accept delta_time and apply smooth movement
+- Updated `CameraSystem.update()` to pass delta_time to camera
+- **Status**: Complete
+- **Files**: `src/ecs/components/camera.py`, `src/ecs/systems/camera_system.py`
+- **Key Decision**: Clamping factor to 1.0 prevents overshooting the target
+- **Result**: Camera smoothly glides toward player instead of snapping instantly
+
 ---
 
 ## Current Game Features 🎮
@@ -320,7 +332,7 @@ This document tracks the development progress of the tile-based game engine. It 
 - ✅ Explore tile-based world (40x16 tiles)
 - ✅ Move player with WASD keys
 - ✅ Smooth player movement (velocity-based)
-- ✅ Camera follows player with screen snapping
+- ✅ **NEW**: Smooth camera following with lerp interpolation
 - ✅ **NEW**: Animated tiles with smooth looping animation
 - ✅ **NEW**: Independent per-tile animation state
 - ✅ Visual terrain: walls, grass, water, sand, wood
@@ -331,6 +343,7 @@ This document tracks the development progress of the tile-based game engine. It 
 - ✅ Component-based data
 - ✅ Multiple game systems working together
 - ✅ Frame-rate independent movement
+- ✅ **NEW**: Frame-rate independent camera lerp
 - ✅ **NEW**: Frame-rate independent animation
 - ✅ Sprite pooling (memory efficient)
 - ✅ Configurable game constants
@@ -348,37 +361,31 @@ This document tracks the development progress of the tile-based game engine. It 
 
 ## Planned Features (Next Phases)
 
-### Phase 10: Smooth Camera Movement
-- [ ] Implement camera lerp (smooth following)
-- [ ] Configurable camera smoothing
-- [ ] Camera easing functions
-- [ ] Optional snap mode
-
-### Phase 11: Audio System
+### Phase 10: Audio System
 - [ ] Create `AudioSystem` for sound effects
 - [ ] Background music support
 - [ ] Sound volume control
 - [ ] Audio configuration
 
-### Phase 12: UI System
+### Phase 11: UI System
 - [ ] Health/status bar rendering
 - [ ] HUD (heads-up display)
 - [ ] Menu system
 - [ ] Pause functionality
 
-### Phase 13: Enemy System
+### Phase 12: Enemy System
 - [ ] Create `EnemyFactory`
 - [ ] Implement `AIComponent`
 - [ ] Basic enemy pathfinding
 - [ ] Combat mechanics
 
-### Phase 14: Game State Management
+### Phase 13: Game State Management
 - [ ] Implement state machine
 - [ ] Game states: Menu, Playing, Paused, GameOver
 - [ ] State transitions
 - [ ] Save/load functionality
 
-### Phase 15: Polish & Optimization
+### Phase 14: Polish & Optimization
 - [ ] Performance profiling
 - [ ] Code optimization
 - [ ] Asset optimization
