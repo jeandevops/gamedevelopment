@@ -1,4 +1,4 @@
-from ecs.components.animated_sprite import AnimatedSpriteComponent
+from ecs.components.sprite import SpriteComponent
 from ecs.entity_manager import EntityManager
 from helpers.logger import logger
 from helpers.constants import (
@@ -23,7 +23,7 @@ class AnimationSystem:
             for entity_id, components in self.entity_manager.get_entities_with_components(['animated_sprite']):
                 if not components['animated_sprite'].animate:
                     continue  # Skip if animation is disabled
-                animated_sprite: AnimatedSpriteComponent = components['animated_sprite']
+                animated_sprite: SpriteComponent = components['animated_sprite']
                 
                 # Validate sprite object
                 if not hasattr(animated_sprite.sprite, 'images') or not animated_sprite.sprite.images:

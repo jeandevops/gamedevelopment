@@ -1,9 +1,11 @@
 from ecs.entity_manager import EntityManager
 from ecs.components.tile import TileComponent  
 from ecs.components.position import PositionComponent
-from ecs.components.animated_sprite import AnimatedSpriteComponent
+from ecs.components.sprite import SpriteComponent
 from helpers.constants import (
-    MAPS_PATH, TILE_SIZE, GRASS, SAND, WATER, WOOD, TILE_SET_SPRITE_FILE, TERRAIN_SPRITES_PATH,
+    MAPS_PATH, TILE_SIZE, GRASS, SAND, WATER, WOOD,
+    TERRAIN_SPRITES_PATH, CRISTALS_SPRITES_PATH,
+    TILE_SET_SPRITE_FILE, BLUE_CRISTAL_SPRITE_FILE, GREY_CRISTAL_SPRITE_FILE,
     ERROR_MAP_FILE_NOT_FOUND,
     ERROR_MAP_READ_FAILED,
     ERROR_MAP_PARSE_FAILED,
@@ -22,13 +24,14 @@ class SpritePool:
         logger.debug("Initializing sprite pool...")
         root_path = os.path.dirname(os.path.abspath(__file__))
         terrain_textures_path = os.path.join(root_path, "..", *TERRAIN_SPRITES_PATH.split("/"))
+        cristals_textures_path = os.path.join(root_path, "..", *CRISTALS_SPRITES_PATH.split("/"))
 
         try:
             sprites_pool = {
                 GRASS: AnimatedSprite(file_path = terrain_textures_path, file_name=TILE_SET_SPRITE_FILE, coordinate_x=0, coordinate_y=0, width=TILE_SIZE["width"], height=TILE_SIZE["height"], horizontal_steps=4),
                 WATER: AnimatedSprite(file_path = terrain_textures_path, file_name=TILE_SET_SPRITE_FILE, coordinate_x=0, coordinate_y=128, width=TILE_SIZE["width"], height=TILE_SIZE["height"], horizontal_steps=2),
                 SAND: AnimatedSprite(file_path = terrain_textures_path, file_name=TILE_SET_SPRITE_FILE, coordinate_x=128, coordinate_y=96, width=TILE_SIZE["width"], height=TILE_SIZE["height"], horizontal_steps=3),
-                WOOD: AnimatedSprite(file_path = terrain_textures_path, file_name=TILE_SET_SPRITE_FILE, coordinate_x=0, coordinate_y=128, width=TILE_SIZE["width"], height=TILE_SIZE["height"], horizontal_steps=2)
+                WOOD: AnimatedSprite(file_path = cristals_textures_path, file_name=GREY_CRISTAL_SPRITE_FILE, coordinate_x=0, coordinate_y=0, width=TILE_SIZE["width"], height=TILE_SIZE["height"], horizontal_steps=8)
             }
             self.pool = sprites_pool
             logger.info(f"Sprite pool initialized with {len(sprites_pool)} sprite types")
@@ -94,7 +97,7 @@ class MapFactory:
                     if not animation:
                         logger.warning(f"No sprite available for tile type {tile_type} at ({row_index}, {col_index}), skipping")
                         continue
-                    animated_sprite = AnimatedSpriteComponent(animation)
+                    animated_sprite = SpriteComponent(animation)
                     components = {
                         "position": position,
                         "tile": tile,

@@ -6,7 +6,12 @@ WATER = 3
 
 MAPS_PATH = "assets/maps/"
 TERRAIN_SPRITES_PATH = "assets/sprites/texture/"
+CRISTALS_SPRITES_PATH = "assets/sprites/cristals/"
 TILE_SET_SPRITE_FILE = "tx-tileset-grass.png"
+BLUE_CRISTAL_SPRITE_FILE = "crystal-qubodup-ccby3-32-blue.png"
+GREY_CRISTAL_SPRITE_FILE = "crystal-qubodup-ccby3-32-grey.png"
+PINK_CRISTAL_SPRITE_FILE = "crystal-qubodup-ccby3-32-pink.png"
+YELLOW_CRISTAL_SPRITE_FILE = "crystal-qubodup-ccby3-32-yellow.png"
 
 TILE_SIZE = {
     "width": 32,

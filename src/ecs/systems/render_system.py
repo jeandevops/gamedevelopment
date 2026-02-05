@@ -39,14 +39,11 @@ class RenderingSystem:
         if not player:
             return  # No player to render
         
-        pygame.draw.rect(
-            self.screen,
-            (255, 0, 0),
-            pygame.Rect(
-                player["position"].x - self.camera_component.x, # type: ignore
-                player["position"].y - self.camera_component.y, # type: ignore
-                player["sprite"].width, # type: ignore
-                player["sprite"].height # type: ignore
+        self.screen.blit(
+            player["animated_sprite"].sprite.image,
+            (
+                player["position"].x - self.camera_component.x,
+                player["position"].y - self.camera_component.y
             )
         )
 
