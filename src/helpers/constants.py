@@ -8,10 +8,9 @@ MAPS_PATH = "assets/maps/"
 TERRAIN_SPRITES_PATH = "assets/sprites/texture/"
 CRISTALS_SPRITES_PATH = "assets/sprites/cristals/"
 TILE_SET_SPRITE_FILE = "tx-tileset-grass.png"
-BLUE_CRISTAL_SPRITE_FILE = "crystal-qubodup-ccby3-32-blue.png"
 GREY_CRISTAL_SPRITE_FILE = "crystal-qubodup-ccby3-32-grey.png"
-PINK_CRISTAL_SPRITE_FILE = "crystal-qubodup-ccby3-32-pink.png"
-YELLOW_CRISTAL_SPRITE_FILE = "crystal-qubodup-ccby3-32-yellow.png"
+CHARACTER_SPRITES_PATH = "assets/sprites/doll/"
+CHARACTER_FILE = "character-sprite-sheet.png"
 
 TILE_SIZE = {
     "width": 32,
@@ -23,7 +22,7 @@ CAMERA_TRIGGER_MARGIN = 200
 CAMERA_WIDTH = 800
 CAMERA_HEIGHT = 600
 
-SPEED = 240 # Character speed in pixels per second
+SPEED = 150 # Character speed in pixels per second
 CAMERA_LERP_SPEED = 0.5 # Camera interpolation speed (higher is snappier, lower is smoother)
 
 FPS = 30

@@ -324,6 +324,34 @@ This document tracks the development progress of the tile-based game engine. It 
 - **Key Decision**: Clamping factor to 1.0 prevents overshooting the target
 - **Result**: Camera smoothly glides toward player instead of snapping instantly
 
+#### ✅ 9.9 Player Directional Animation
+- Created `DirectionComponent` to track player facing direction
+- Detects movement direction from velocity (8 directions: up, down, left, right, + 4 diagonals)
+- Implemented direction mapping with dictionary lookup (clean, no 16+ if/elif chains)
+- **Status**: Complete
+- **Files**: `src/ecs/components/direction.py`
+- **Key Decision**: Dictionary lookup instead of if/elif for diagonal detection
+
+#### ✅ 9.10 Player Movement & Idle Animation States
+- Created `PlayerAnimationSystem` to manage animation state
+- Switches between movement and idle sprite sheets based on velocity
+- Movement sprites: 8 directions (up, down, left, right, up-right, up-left, down-right, down-left)
+- Idle sprites: 8 directions with breathing/resting animation
+- Smooth transitions: sprite changes instantly, animation continues smoothly
+- **Status**: Complete
+- **Files**: `src/ecs/systems/player_animation_system.py`
+- **Key Decision**: Don't reset frame_index on idle (allows smooth animation continuation)
+- **Result**: Player has contextual animations for all movement directions
+
+#### ✅ 9.11 Sprite Pool for Player (8 Movement + 8 Idle)
+- Extended `PlayerFactory` sprite pool to include all directional variants
+- 16 total AnimatedSprite objects (8 movement + 8 idle)
+- All referenced from central sprite sheet
+- Memory efficient: single sprite file loaded once, referenced 16 times
+- **Status**: Complete
+- **Files**: `src/world/player_factory.py`
+- **Result**: Flexible player animation system ready for future variants (jump, attack, etc.)
+
 ---
 
 ## Current Game Features 🎮
@@ -332,6 +360,9 @@ This document tracks the development progress of the tile-based game engine. It 
 - ✅ Explore tile-based world (40x16 tiles)
 - ✅ Move player with WASD keys
 - ✅ Smooth player movement (velocity-based)
+- ✅ **NEW**: Directional player animation (8 directions)
+- ✅ **NEW**: Idle animation when standing still (8 directions)
+- ✅ **NEW**: Diagonal movement with corresponding animations
 - ✅ **NEW**: Smooth camera following with lerp interpolation
 - ✅ **NEW**: Animated tiles with smooth looping animation
 - ✅ **NEW**: Independent per-tile animation state
@@ -343,6 +374,9 @@ This document tracks the development progress of the tile-based game engine. It 
 - ✅ Component-based data
 - ✅ Multiple game systems working together
 - ✅ Frame-rate independent movement
+- ✅ **NEW**: Frame-rate independent player animation
+- ✅ **NEW**: Directional component system (8-directional movement)
+- ✅ **NEW**: State-based animation switching (movement → idle)
 - ✅ **NEW**: Frame-rate independent camera lerp
 - ✅ **NEW**: Frame-rate independent animation
 - ✅ Sprite pooling (memory efficient)

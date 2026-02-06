@@ -14,6 +14,7 @@ from ecs.systems.camera_system import CameraSystem
 from ecs.systems.event_handler_system import EventHandlerSystem
 from ecs.systems.movement_system import MovementSystem
 from ecs.systems.animation_system import AnimationSystem
+from ecs.systems.player_animation_system import PlayerAnimationSystem
 
 # Entity Manager
 from ecs.entity_manager import EntityManager
@@ -38,6 +39,7 @@ camera_system = CameraSystem(camera_component)
 event_handler_system = EventHandlerSystem(entity_manager)
 movement_system = MovementSystem(entity_manager)
 animation_system = AnimationSystem(entity_manager)
+player_animation_system = PlayerAnimationSystem(entity_manager)
 
 # Initialize rendering
 screen = pygame.display.set_mode((CAMERA_WIDTH, CAMERA_HEIGHT))
@@ -73,6 +75,8 @@ while True:
         player_x = player["position"].x
         player_y = player["position"].y
         camera_system.update(target_x=player_x, target_y=player_y, delta_time=delta_time)
+
+    player_animation_system.update()
     
     # Render
     screen.fill((0, 0, 0))
