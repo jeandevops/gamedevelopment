@@ -1,5 +1,6 @@
 import logging
 import sys
+import os
 from typing import Optional
 
 class GameLogger:
@@ -24,13 +25,17 @@ class GameLogger:
         
         self._initialized = True
         
+        # Get log level from environment variable (default: INFO)
+        log_level_name = os.getenv("LOG_LEVEL", "INFO").upper()
+        log_level = getattr(logging, log_level_name, logging.INFO)
+        
         # Create logger
         self.logger = logging.getLogger("GameEngine")
-        self.logger.setLevel(logging.DEBUG)
+        self.logger.setLevel(log_level)
         
         # Create console handler with detailed formatting
         console_handler = logging.StreamHandler(sys.stdout)
-        console_handler.setLevel(logging.DEBUG)
+        console_handler.setLevel(log_level)
         
         # Create formatter
         formatter = logging.Formatter(

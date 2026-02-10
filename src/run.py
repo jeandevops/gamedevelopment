@@ -1,4 +1,5 @@
 import pygame
+import os
 
 # Utils
 from helpers.constants import CAMERA_WIDTH, CAMERA_HEIGHT, FPS, CAMERA_LERP_SPEED
@@ -42,7 +43,8 @@ animation_system = AnimationSystem(entity_manager)
 player_animation_system = PlayerAnimationSystem(entity_manager)
 
 # Initialize rendering
-screen = pygame.display.set_mode((CAMERA_WIDTH, CAMERA_HEIGHT))
+fullscreen_mode = pygame.FULLSCREEN | pygame.SCALED if os.getenv("FULLSCREEN", "0") == "1" else pygame.SCALED
+screen = pygame.display.set_mode((CAMERA_WIDTH, CAMERA_HEIGHT), fullscreen_mode)
 rendering_system = RenderingSystem(screen, entity_manager, camera_component)
 
 # Object that will defines the FPS dinamically:

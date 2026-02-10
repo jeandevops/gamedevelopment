@@ -395,11 +395,11 @@ This document tracks the development progress of the tile-based game engine. It 
 
 ## Planned Features (Next Phases)
 
-### Phase 10: Audio System
-- [ ] Create `AudioSystem` for sound effects
-- [ ] Background music support
-- [ ] Sound volume control
-- [ ] Audio configuration
+### Phase 10: Enemy System
+- [ ] Create `EnemyFactory`
+- [ ] Implement `AIComponent`
+- [ ] Basic enemy pathfinding
+- [ ] Combat mechanics
 
 ### Phase 11: UI System
 - [ ] Health/status bar rendering
@@ -407,17 +407,17 @@ This document tracks the development progress of the tile-based game engine. It 
 - [ ] Menu system
 - [ ] Pause functionality
 
-### Phase 12: Enemy System
-- [ ] Create `EnemyFactory`
-- [ ] Implement `AIComponent`
-- [ ] Basic enemy pathfinding
-- [ ] Combat mechanics
-
-### Phase 13: Game State Management
+### Phase 12: Game State Management
 - [ ] Implement state machine
 - [ ] Game states: Menu, Playing, Paused, GameOver
 - [ ] State transitions
 - [ ] Save/load functionality
+
+### Phase 13: Audio System
+- [ ] Create `AudioSystem` for sound effects
+- [ ] Background music support
+- [ ] Sound volume control
+- [ ] Audio configuration
 
 ### Phase 14: Polish & Optimization
 - [ ] Performance profiling
