@@ -11,6 +11,7 @@ TILE_SET_SPRITE_FILE = "tx-tileset-grass.png"
 GREY_CRISTAL_SPRITE_FILE = "crystal-qubodup-ccby3-32-grey.png"
 CHARACTER_SPRITES_PATH = "assets/sprites/doll/"
 CHARACTER_FILE = "character-sprite-sheet.png"
+TREE_AND_WATER_FILE = "tx-tree-and-water.png"
 
 TILE_SIZE = {
     "width": 32,
@@ -24,6 +25,9 @@ CAMERA_HEIGHT = 600
 
 SPEED = 150 # Character speed in pixels per second
 CAMERA_LERP_SPEED = 0.5 # Camera interpolation speed (higher is snappier, lower is smoother)
+
+# Collision System
+MIN_COLLISION_OVERLAP_PIXELS = 3  # Minimum pixel overlap required to trigger collision (1 = any overlap counts)
 
 FPS = 30
 DEFAULT_ANIMATION_FRAME_DURATION = 150  # in milliseconds

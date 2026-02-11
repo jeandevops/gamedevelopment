@@ -1,11 +1,12 @@
 from ecs.entity_manager import EntityManager
 from ecs.components.tile import TileComponent  
+from ecs.components.collision import CollisionComponent
 from ecs.components.position import PositionComponent
 from ecs.components.sprite import SpriteComponent
 from helpers.constants import (
     MAPS_PATH, TILE_SIZE, GRASS, SAND, WATER, WOOD,
     TERRAIN_SPRITES_PATH, CRISTALS_SPRITES_PATH,
-    TILE_SET_SPRITE_FILE, GREY_CRISTAL_SPRITE_FILE,
+    TILE_SET_SPRITE_FILE, GREY_CRISTAL_SPRITE_FILE, TREE_AND_WATER_FILE,
     ERROR_MAP_FILE_NOT_FOUND,
     ERROR_MAP_READ_FAILED,
     ERROR_MAP_PARSE_FAILED,
@@ -29,7 +30,7 @@ class SpritePool:
         try:
             sprites_pool = {
                 GRASS: AnimatedSprite(file_path = terrain_textures_path, file_name=TILE_SET_SPRITE_FILE, coordinate_x=0, coordinate_y=0, width=TILE_SIZE["width"], height=TILE_SIZE["height"], horizontal_steps=4),
-                WATER: AnimatedSprite(file_path = terrain_textures_path, file_name=TILE_SET_SPRITE_FILE, coordinate_x=0, coordinate_y=128, width=TILE_SIZE["width"], height=TILE_SIZE["height"], horizontal_steps=2),
+                WATER: AnimatedSprite(file_path = terrain_textures_path, file_name=TREE_AND_WATER_FILE, coordinate_x=0, coordinate_y=0, width=TILE_SIZE["width"], height=TILE_SIZE["height"], horizontal_steps=3),
                 SAND: AnimatedSprite(file_path = terrain_textures_path, file_name=TILE_SET_SPRITE_FILE, coordinate_x=128, coordinate_y=96, width=TILE_SIZE["width"], height=TILE_SIZE["height"], horizontal_steps=3),
                 WOOD: AnimatedSprite(file_path = cristals_textures_path, file_name=GREY_CRISTAL_SPRITE_FILE, coordinate_x=0, coordinate_y=0, width=TILE_SIZE["width"], height=TILE_SIZE["height"], horizontal_steps=8)
             }
@@ -49,6 +50,22 @@ class SpritePool:
 class MapFactory:
     def __init__(self):
         self.map_data: Any = None
+
+    def _create_collision_from_tile_type(self, tile_type: int) -> CollisionComponent:
+        """Create collision component based on tile type"""
+        # Tolerance map: if tile_type not in this map, it's walkable (no collision component needed)
+        # Values represent collision tolerance in pixels
+        collision_map = {
+            WATER: 16,
+            WOOD: 0,
+        }
+        
+        if tile_type in collision_map:
+            tolerance = collision_map[tile_type]
+            return CollisionComponent(tolerance=tolerance)
+        
+        # Walkable tiles don't need a collision component
+        return None
 
     def load_map(self, entity_manager: EntityManager, map_name: str) -> None:
         """Parses the map data and add tiles entities to the EntityManager"""
@@ -98,11 +115,17 @@ class MapFactory:
                         logger.warning(f"No sprite available for tile type {tile_type} at ({row_index}, {col_index}), skipping")
                         continue
                     animated_sprite = SpriteComponent(animation)
+                    
+                    # Build components dict - only add collision if it's a solid tile
                     components = {
                         "position": position,
                         "tile": tile,
                         "animated_sprite": animated_sprite
                     }
+                    collision = self._create_collision_from_tile_type(tile_type)
+                    if collision is not None:
+                        components["collision"] = collision
+                    
                     entity_manager.add_entity(entity_id, components)
                     tile_count += 1
             logger.info(f"Map loaded successfully: {tile_count} tiles created")
