@@ -399,27 +399,37 @@ This document tracks the development progress of the tile-based game engine. It 
 - [ ] Create `EnemyFactory`
 - [ ] Implement `AIComponent`
 - [ ] Basic enemy pathfinding
-- [ ] Combat mechanics
+- [ ] Range of vision mechanics (battle)
 
-### Phase 11: UI System
+### Phase 11: Isometric battle grid
+- [ ] Implement grid mechanics
+  - [ ] Turns;
+  - [ ] Movement;
+  - [ ] Attack and damage;
+  - [ ] End of battle;
+
+### Phase 12: Visual Layer x Game Layer
+- [ ] Implement the visual layer of scenarios
+
+### Phase 13: UI System
 - [ ] Health/status bar rendering
 - [ ] HUD (heads-up display)
 - [ ] Menu system
 - [ ] Pause functionality
 
-### Phase 12: Game State Management
+### Phase 14: Game State Management
 - [ ] Implement state machine
 - [ ] Game states: Menu, Playing, Paused, GameOver
 - [ ] State transitions
 - [ ] Save/load functionality
 
-### Phase 13: Audio System
+### Phase 15: Audio System
 - [ ] Create `AudioSystem` for sound effects
 - [ ] Background music support
 - [ ] Sound volume control
-- [ ] Audio configuration
+- [ ] Audio configuration6
 
-### Phase 14: Polish & Optimization
+### Phase 16: Polish & Optimization
 - [ ] Performance profiling
 - [ ] Code optimization
 - [ ] Asset optimization

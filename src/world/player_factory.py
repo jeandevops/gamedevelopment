@@ -17,7 +17,6 @@ class PlayerFactory:
         """
         Creates a player entity with the necessary components and adds it to the EntityManager
         """
-        #@TODO: Implement diagonals and idle animations
         sprite_size = 32
         sprites = {
             "up": AnimatedSprite(file_path=CHARACTER_SPRITES_PATH, file_name=CHARACTER_FILE, coordinate_x=(2*sprite_size), coordinate_y=(4*sprite_size), width=sprite_size, height=sprite_size, horizontal_steps=2),
