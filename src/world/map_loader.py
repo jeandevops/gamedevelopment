@@ -51,7 +51,7 @@ class MapFactory:
     def __init__(self):
         self.map_data: Any = None
 
-    def _create_collision_from_tile_type(self, tile_type: int) -> CollisionComponent:
+    def _create_collision_from_tile_type(self, tile_type: int) -> CollisionComponent|None:
         """Create collision component based on tile type"""
         # Tolerance map: if tile_type not in this map, it's walkable (no collision component needed)
         # Values represent collision tolerance in pixels
