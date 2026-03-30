@@ -333,7 +333,7 @@ This document tracks the development progress of the tile-based game engine. It 
 - **Key Decision**: Dictionary lookup instead of if/elif for diagonal detection
 
 #### ✅ 9.10 Player Movement & Idle Animation States
-- Created `PlayerAnimationSystem` to manage animation state
+- Created `CharacterAnimationSystem` to manage animation state
 - Switches between movement and idle sprite sheets based on velocity
 - Movement sprites: 8 directions (up, down, left, right, up-right, up-left, down-right, down-left)
 - Idle sprites: 8 directions with breathing/resting animation

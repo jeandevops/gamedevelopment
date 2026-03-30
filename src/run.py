@@ -15,7 +15,7 @@ from ecs.systems.camera_system import CameraSystem
 from ecs.systems.event_handler_system import EventHandlerSystem
 from ecs.systems.movement_system import MovementSystem
 from ecs.systems.animation_system import AnimationSystem
-from ecs.systems.player_animation_system import PlayerAnimationSystem
+from ecs.systems.player_animation_system import CharacterAnimationSystem
 
 # Entity Manager
 from ecs.entity_manager import EntityManager
@@ -40,7 +40,7 @@ camera_system = CameraSystem(camera_component)
 event_handler_system = EventHandlerSystem(entity_manager)
 movement_system = MovementSystem(entity_manager)
 animation_system = AnimationSystem(entity_manager)
-player_animation_system = PlayerAnimationSystem(entity_manager)
+player_animation_system = CharacterAnimationSystem(entity_manager)
 
 # Initialize rendering
 fullscreen_mode = pygame.FULLSCREEN | pygame.SCALED if os.getenv("FULLSCREEN", "0") == "1" else pygame.SCALED
