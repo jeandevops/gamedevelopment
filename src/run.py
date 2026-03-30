@@ -15,7 +15,7 @@ from ecs.systems.camera_system import CameraSystem
 from ecs.systems.event_handler_system import EventHandlerSystem
 from ecs.systems.movement_system import MovementSystem
 from ecs.systems.animation_system import AnimationSystem
-from ecs.systems.player_animation_system import CharacterAnimationSystem
+from ecs.systems.character_animation_system import CharacterAnimationSystem
 
 # Entity Manager
 from ecs.entity_manager import EntityManager
