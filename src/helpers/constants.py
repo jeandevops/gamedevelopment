@@ -9,9 +9,11 @@ TERRAIN_SPRITES_PATH = "assets/sprites/texture/"
 CRISTALS_SPRITES_PATH = "assets/sprites/cristals/"
 TILE_SET_SPRITE_FILE = "tx-tileset-grass.png"
 GREY_CRISTAL_SPRITE_FILE = "crystal-qubodup-ccby3-32-grey.png"
+TREE_AND_WATER_FILE = "tx-tree-and-water.png"
 CHARACTER_SPRITES_PATH = "assets/sprites/doll/"
 CHARACTER_FILE = "character-sprite-sheet.png"
-TREE_AND_WATER_FILE = "tx-tree-and-water.png"
+ENEMY_SPRITES_PATH = "assets/sprites/enemies/"
+ENEMY_FILE = "Orc-Peon-Red.png"
 
 TILE_SIZE = {
     "width": 32,

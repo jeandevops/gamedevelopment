@@ -4,11 +4,9 @@ from ecs.components.collision import CollisionComponent
 from ecs.components.position import PositionComponent
 from ecs.components.sprite import SpriteComponent
 from helpers.constants import (
-    MAPS_PATH, TILE_SIZE, GRASS, SAND, WATER, WOOD,
+    TILE_SIZE, GRASS, SAND, WATER, WOOD,
     TERRAIN_SPRITES_PATH, CRISTALS_SPRITES_PATH,
     TILE_SET_SPRITE_FILE, GREY_CRISTAL_SPRITE_FILE, TREE_AND_WATER_FILE,
-    ERROR_MAP_FILE_NOT_FOUND,
-    ERROR_MAP_READ_FAILED,
     ERROR_MAP_PARSE_FAILED,
     ERROR_MAP_EMPTY,
     ERROR_TILE_LOADING_FAILED,
@@ -48,8 +46,8 @@ class SpritePool:
         return sprite
         
 class MapFactory:
-    def __init__(self):
-        self.map_data: Any = None
+    def __init__(self, map_data: Any = None):
+        self.map_data = map_data
 
     def _create_collision_from_tile_type(self, tile_type: int) -> CollisionComponent|None:
         """Create collision component based on tile type"""
@@ -67,23 +65,8 @@ class MapFactory:
         # Walkable tiles don't need a collision component
         return None
 
-    def load_map(self, entity_manager: EntityManager, map_name: str) -> None:
-        """Parses the map data and add tiles entities to the EntityManager"""
-        logger.info(f"Loading map: {map_name}")
-        
-        try:
-            with open(f"{MAPS_PATH}{map_name}.json", "r") as file:
-                self.map_data = file.read()
-                logger.debug(f"Map file read successfully: {map_name}.json")
-        except FileNotFoundError:
-            error_msg = ERROR_MAP_FILE_NOT_FOUND.format(map_name=map_name)
-            logger.error(error_msg)
-            raise FileNotFoundError(error_msg)
-        except IOError as e:
-            error_msg = ERROR_MAP_READ_FAILED.format(map_name=map_name, error=str(e))
-            logger.error(error_msg)
-            raise RuntimeError(error_msg)
-        
+    def load_tiles(self, entity_manager: EntityManager) -> None:
+        """Loads the map from a file and creates tile entities in the EntityManager"""
         sprites_pool = SpritePool()
 
         try:
