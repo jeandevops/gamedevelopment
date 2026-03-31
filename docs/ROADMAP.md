@@ -360,12 +360,12 @@ This document tracks the development progress of the tile-based game engine. It 
 - ✅ Explore tile-based world (40x16 tiles)
 - ✅ Move player with WASD keys
 - ✅ Smooth player movement (velocity-based)
-- ✅ **NEW**: Directional player animation (8 directions)
-- ✅ **NEW**: Idle animation when standing still (8 directions)
-- ✅ **NEW**: Diagonal movement with corresponding animations
-- ✅ **NEW**: Smooth camera following with lerp interpolation
-- ✅ **NEW**: Animated tiles with smooth looping animation
-- ✅ **NEW**: Independent per-tile animation state
+- ✅ Directional player animation (8 directions)
+- ✅ Idle animation when standing still (8 directions)
+- ✅ Diagonal movement with corresponding animations
+- ✅ Smooth camera following with lerp interpolation
+- ✅ Animated tiles with smooth looping animation
+- ✅ Independent per-tile animation state
 - ✅ Visual terrain: walls, grass, water, sand, wood
 
 ### Technical Features
@@ -374,11 +374,11 @@ This document tracks the development progress of the tile-based game engine. It 
 - ✅ Component-based data
 - ✅ Multiple game systems working together
 - ✅ Frame-rate independent movement
-- ✅ **NEW**: Frame-rate independent player animation
-- ✅ **NEW**: Directional component system (8-directional movement)
-- ✅ **NEW**: State-based animation switching (movement → idle)
-- ✅ **NEW**: Frame-rate independent camera lerp
-- ✅ **NEW**: Frame-rate independent animation
+- ✅ Frame-rate independent player animation
+- ✅ Directional component system (8-directional movement)
+- ✅ State-based animation switching (movement → idle)
+- ✅ Frame-rate independent camera lerp
+- ✅ Frame-rate independent animation
 - ✅ Sprite pooling (memory efficient)
 - ✅ Configurable game constants
 - ✅ Clean separation of concerns
@@ -389,19 +389,87 @@ This document tracks the development progress of the tile-based game engine. It 
 - ✅ Consistent naming conventions
 - ✅ Reusable factory patterns
 - ✅ Extensible design
-- ✅ **NEW**: Comprehensive animation documentation
+- ✅ Comprehensive animation documentation
+- ✅ **NEW**: Enemy AI system with wander and chase behaviors
+- ✅ **NEW**: Configurable enemy types and aggression levels
+- ✅ **NEW**: State machine for enemy behavior (wander ↔ chase)
+
+---
+
+## Completed Phases ✅
+
+### Phase 10: Enemy System (Week 3)
+
+#### ✅ 10.1 Enemy AI Component
+- Created `AIBehaviorComponent` for enemy configuration
+- Stores vision_range, interaction_range, aggression, speeds
+- Configurable per enemy type
+- **Status**: Complete
+- **Files**: `src/ecs/components/ai.py`
+
+#### ✅ 10.2 Enemy AI System
+- Created `EnemiesSystem` for AI behavior logic
+- Implements state machine (wander ↔ chase)
+- Distance-based detection (vision_range)
+- Aggressive vs passive enemy types
+- **Status**: Complete
+- **Files**: `src/ecs/systems/enemies_system.py`
+- **Key Algorithm**: Euclidean distance + normalized direction vectors
+
+#### ✅ 10.3 Wander Behavior
+- Random direction selection using angle-to-velocity conversion
+- Uniform distribution in all 8 directions (cos/sin normalization)
+- Timer-based behavior switching (1-3 seconds per direction)
+- Smooth, consistent movement speed
+- **Status**: Complete
+- **Key Decision**: Used cos(angle), sin(angle) instead of linear interpolation for uniform distribution
+
+#### ✅ 10.4 Chase Behavior
+- Direction calculation toward player
+- Direction normalization (prevents diagonal speedup)
+- Configurable chase speed per enemy type
+- Triggered when distance ≤ vision_range
+- **Status**: Complete
+
+#### ✅ 10.5 Enemy Factory
+- Created `EnemiesFactory` to spawn enemies from map data
+- Sprite pooling (all enemies share 4 sprites)
+- Initialization from JSON map file "enemies" section
+- **Status**: Complete
+- **Files**: `src/world/enemies_factory.py`
+
+#### ✅ 10.6 Game Integration
+- Integrated `EnemiesSystem` into main game loop
+- Called in fixed timestep loop (before movement system)
+- Enemies update before movement applies velocity
+- Proper execution order: EnemiesSystem → MovementSystem → RenderSystem
+- **Status**: Complete
+- **Files**: `src/run.py`
+
+#### ✅ 10.7 Configuration
+- Added ENEMIES_SPECS to constants for each enemy type
+- Tunable: vision_range, speeds, aggression
+- Easy difficulty balancing without code changes
+- **Status**: Complete  
+- **Files**: `src/helpers/constants.py`
+
+#### ✅ 10.8 Documentation
+- Comprehensive EnemiesSystem documentation in SYSTEMS.md
+- AIBehaviorComponent and DirectionComponent in COMPONENTS.md
+- Hands-on learning guide (ENEMY_SYSTEM_HANDS_ON.md)
+- Build checklist for verification
+- **Status**: Complete
+- **Files**: `docs/SYSTEMS.md`, `docs/COMPONENTS.md`, `docs/ENEMY_SYSTEM_HANDS_ON.md`
+
+**Gameplay Result**: Enemies wander around the map, detect player when close, and chase when aggression is enabled. Multiple enemies work independently. Movement is smooth and frame-rate independent.
+
+**Performance**: Negligible impact with 2-10 enemies at 60 FPS.
 
 ---
 
 ## Planned Features (Next Phases)
 
-### Phase 10: Enemy System
-- [ ] Create `EnemyFactory`
-- [ ] Implement `AIComponent`
-- [ ] Basic enemy pathfinding
-- [ ] Range of vision mechanics (battle)
-
-### Phase 11: Isometric battle grid
+### Phase 11: Isometric Battle Grid
 - [ ] Implement grid mechanics
   - [ ] Turns;
   - [ ] Movement;

@@ -10,6 +10,8 @@ Detailed documentation for all entity components.
 5. [PlayerComponent](#playercomponent)
 6. [SpriteComponent](#spritecomponent)
 7. [AnimatedSpriteComponent](#animatedspritecomponent)
+8. [DirectionComponent](#directioncomponent)
+9. [AIBehaviorComponent](#aibehaviorcomponent)
 
 ---
 
@@ -480,4 +482,228 @@ for entity_id, components in entities:
     if health.is_alive():
         # Process alive entities
 ```
+
+---
+
+## DirectionComponent
+
+**Purpose**: Tracks the current facing direction of an entity (up, down, left, right, and diagonals)
+
+**File**: `src/ecs/components/direction.py`
+
+**Properties**:
+- `direction` (str) - Current direction: "up", "down", "left", "right", "up_left", "up_right", "down_left", "down_right"
+
+**Code**:
+```python
+class DirectionComponent:
+    def __init__(self):
+        self.direction = "down"  # Default facing direction
+    
+    def set_direction(self, direction: str) -> None:
+        """Sets the current direction of the entity"""
+        self.direction = direction
+```
+
+**Valid Directions**:
+```
+up_left     up      up_right
+  ↖         ↑         ↗
+   \        |        /
+←───────────•───────────→   |  left/right
+   /        |        \
+  ↙         ↓         ↘
+down_left   down    down_right
+```
+
+**Usage**: Entities that have visuals requiring orientation
+- Player (sprite changes based on direction)
+- Enemies (face direction they're moving)
+- NPCs (look at player or direction of conversation)
+
+**Example**:
+```python
+direction = DirectionComponent()
+print(direction.direction)  # "down"
+
+direction.set_direction("up_right")
+print(direction.direction)  # "up_right"
+```
+
+**Related Systems**:
+- `CharacterAnimationSystem` - reads direction to select correct sprite animation
+- `EnemiesSystem` - updates direction based on movement velocity
+- Could be used by: TalkSystem, GestureSystem, FacingSystem
+
+**How Animation System Uses It**:
+```python
+# In CharacterAnimationSystem.update():
+direction = components["direction"]
+animated_sprite = components["animated_sprite"]
+
+# Determine sprite key based on movement and direction
+sprite_key = "idle_" + direction.direction if not moving else direction.direction
+animated_sprite.sprite = sprite_pool[sprite_key]
+```
+
+**Key Point**: The direction is calculated from velocity (in systems), then stored in this component so animation system can use it for sprite selection.
+
+---
+
+## AIBehaviorComponent
+
+**Purpose**: Stores AI configuration and state for enemy entities
+
+**File**: `src/ecs/components/ai.py`
+
+**Properties**:
+- `behavior_type` (str) - Type of behavior: "wander", "patrol", "aggressive", etc.
+- `aggressive` (bool) - True if enemy chases player, False if just wanders
+- `vision_range` (int) - Distance in pixels enemy can see player (detection radius)
+- `interaction_range` (int) - Distance for non-combat interactions (reserved for future use)
+- `wander_speed` (int) - Movement speed while wandering (pixels/second)
+- `chase_speed` (int) - Movement speed while chasing (pixels/second)
+
+**Code**:
+```python
+class AIBehaviorComponent:
+    def __init__(self, behavior_type: str, vision_range: int, interaction_range: int, 
+                 aggressive: bool = False, wander_speed: int = 0, chase_speed: int = 0):
+        self.behavior_type = behavior_type
+        self.aggressive = aggressive
+        self.vision_range = vision_range
+        self.interaction_range = interaction_range
+        self.wander_speed = wander_speed
+        self.chase_speed = chase_speed
+```
+
+**Configuration Values** (from `constants.py`):
+```python
+ENEMIES_SPECS = {
+    "orc": {
+        "vision_range": 100,        # Can see at 100px
+        "interaction_range": 50,    # Interaction radius
+        "aggressive": True,         # Will chase
+        "wander_speed": 50,         # Pixels/sec wandering
+        "chase_speed": 100          # Pixels/sec chasing
+    }
+}
+```
+
+**Usage**: Every enemy entity needs this component
+
+**Example**:
+```python
+# Create an aggressive orc
+ai = AIBehaviorComponent(
+    behavior_type="wander",
+    vision_range=200,
+    interaction_range=50,
+    aggressive=True,
+    wander_speed=50,
+    chase_speed=150
+)
+
+print(ai.aggressive)        # True
+print(ai.vision_range)      # 200
+print(ai.chase_speed)       # 150
+```
+
+**Behavior Types** (Reserved for expansion):
+```python
+"wander"       # Current: Random movement, may chase if aggressive
+"patrol"       # Future: Walks specific paths
+"passive"      # Future: Never chases, always wanders
+"aggressive"   # Future: Actively hunts even at range
+"defensive"    # Future: Protects specific area
+"boss"         # Future: Multi-phase combat behavior
+```
+
+**State Guide**:
+
+| Scenario | aggressive | vision_range | Behavior |
+|----------|-----------|--------------|----------|
+| Gentle NPC | False | 100 | Always wanders |
+| Guard | True | 200 | Wanders until player close, then chases |
+| Huntsman | True | 300 | Aggressive, chases from far away |
+| Coward | False | 50 | Only wanders, barely reacts to player |
+
+**Speed Recommendations** (pixels/second):
+```python
+PLAYER_SPEED = 150          # Player baseline
+wander_speed = 50-75        # Slower than player (can escape)
+chase_speed = 100-200       # Variable based on enemy type
+```
+
+**Why Separate wander_speed and chase_speed?**
+- Wander slower → enemies feel less threatening, easier to escape
+- Chase faster → makes combat exciting, but not impossible
+- Different for each enemy type → variety in difficulty
+
+**Related Systems**:
+- `EnemiesSystem` - reads vision_range, aggressive, speeds to implement behavior
+- `RenderingSystem` - could visualize vision_range as debug circle
+- Could be used by: SoundSystem (hearing range), MemorySystem (remember player)
+
+**How EnemiesSystem Uses It**:
+```python
+# In EnemiesSystem.update():
+ai = components['ai_behavior']
+distance = calculate_distance(pos, player_pos)
+
+if distance <= ai.vision_range:
+    if ai.aggressive:
+        chase_player(velocity, player_pos, speed=ai.chase_speed)
+    else:
+        wander(velocity, speed=ai.wander_speed)
+else:
+    wander(velocity, speed=ai.wander_speed)
+```
+
+**Default Values**:
+- `aggressive`: False (passive by default)
+- `wander_speed`: 0 (stationary if not set)
+- `chase_speed`: 0 (won't move if not set)
+
+**Initialization in EnemiesFactory**:
+```python
+# From map data, creates enemies with AIBehaviorComponent
+ai_behavior = AIBehaviorComponent(
+    behavior_type=ENEMIES_SPECS[enemy_type]["behavior_type"],
+    vision_range=ENEMIES_SPECS[enemy_type]["vision_range"],
+    interaction_range=ENEMIES_SPECS[enemy_type]["interaction_range"],
+    aggressive=ENEMIES_SPECS[enemy_type]["aggressive"],
+    wander_speed=ENEMIES_SPECS[enemy_type]["wander_speed"],
+    chase_speed=ENEMIES_SPECS[enemy_type]["chase_speed"]
+)
+```
+
+**Tuning for Game Feel**:
+```python
+# Easy enemies (player should win easily)
+{
+    "vision_range": 50,
+    "aggressive": True,
+    "wander_speed": 30,
+    "chase_speed": 80
+}
+
+# Medium difficulty
+{
+    "vision_range": 150,
+    "aggressive": True,
+    "wander_speed": 50,
+    "chase_speed": 150
+}
+
+# Hard enemies (challenging)
+{
+    "vision_range": 250,
+    "aggressive": True,
+    "wander_speed": 75,
+    "chase_speed": 180
+}
+```
+
+---
 
