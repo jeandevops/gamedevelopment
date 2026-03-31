@@ -24,7 +24,9 @@ ENEMIES_SPECS = {
         "vision_range": 100,
         "interaction_range": 50,
         "aggressive": True,
-        "size": "normal"
+        "size": "normal",
+        "wander_speed": 10,
+        "chase_speed": 100
     }
 }
 
@@ -39,7 +41,7 @@ CAMERA_TRIGGER_MARGIN = 200
 CAMERA_WIDTH = 800
 CAMERA_HEIGHT = 600
 
-SPEED = 150 # Character speed in pixels per second
+PLAYER_SPEED = 150 # Character speed in pixels per second
 CAMERA_LERP_SPEED = 0.5 # Camera interpolation speed (higher is snappier, lower is smoother)
 
 # Collision System

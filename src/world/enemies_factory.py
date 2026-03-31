@@ -202,6 +202,8 @@ class EnemiesFactory:
             vision_range = ENEMIES_SPECS[enemy_type]["vision_range"]
             interaction_range = ENEMIES_SPECS[enemy_type]["interaction_range"]
             aggressive = ENEMIES_SPECS[enemy_type]["aggressive"]
+            wander_speed = ENEMIES_SPECS[enemy_type]["wander_speed"]
+            chase_speed = ENEMIES_SPECS[enemy_type]["chase_speed"]
             sprites_pool = enemies_sprites_pools.get(enemy_type)
             if not sprites_pool:
                 logger.warning(f"No sprite pool found for enemy type: {enemy_type}, skipping enemy creation")
@@ -212,7 +214,7 @@ class EnemiesFactory:
                 "velocity": VelocityComponent(vx=0, vy=0),
                 "direction": DirectionComponent(),
                 "animated_sprite": SpriteComponent(sprite=sprites_pool.sprites["idle_down"]), # Default facing down
-                "ai_behavior": AIBehaviorComponent(behavior_type="wander", vision_range=vision_range, interaction_range=interaction_range, aggressive=aggressive),
+                "ai_behavior": AIBehaviorComponent(behavior_type="wander", vision_range=vision_range, interaction_range=interaction_range, aggressive=aggressive, wander_speed=wander_speed, chase_speed=chase_speed),
                 "sprite_pool": sprites_pool.sprites
             }
             self.entity_manager.add_entity(f"enemy_{_enemy_index}", enemy_components)

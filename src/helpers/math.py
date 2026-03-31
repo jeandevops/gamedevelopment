@@ -16,3 +16,8 @@ def lerp(start: float, end: float, factor: float) -> float:
     """
     clamped_factor = min(factor, 1.0)  # Clamp to prevent overshoot
     return start + (end - start) * clamped_factor
+
+# distance = √((x₂ - x₁)² + (y₂ - y₁)²)
+def euclidean_distance(x1: float, y1: float, x2: float, y2: float) -> float:
+    """Calculates the Euclidean distance between two points (x1, y1) and (x2, y2)"""
+    return ((x2 - x1) ** 2 + (y2 - y1) ** 2) ** 0.5
