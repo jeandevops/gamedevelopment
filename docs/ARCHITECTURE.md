@@ -4,13 +4,14 @@ A tile-based game engine built with **Entity Component System (ECS)** architectu
 
 ## Quick Navigation
 
-- **[SYSTEMS.md](SYSTEMS.md)** - How rendering, camera, input, movement, collision, and animation work
-- **[COMPONENTS.md](COMPONENTS.md)** - Reference for Position, Tile, Camera, Velocity, Player, AnimatedSprite components
+- **[SYSTEMS.md](SYSTEMS.md)** - How rendering, camera, input, movement, collision, animation, and enemy AI work
+- **[COMPONENTS.md](COMPONENTS.md)** - Reference for Position, Tile, Camera, Velocity, Player, AnimatedSprite, Direction, and AIBehavior components
 - **[PHYSICS.md](PHYSICS.md)** - Delta time, fixed timestep, and frame-rate independent movement
 - **[ANIMATION.md](ANIMATION.md)** - Sprite pooling, frame-rate independent animation, and timing
 - **[LERP_MATH.md](LERP_MATH.md)** - Linear interpolation math and delta time explained
 - **[CULLING.md](CULLING.md)** - Viewport culling optimization technique
 - **[ROADMAP.md](ROADMAP.md)** - Project phases and progress tracking
+- **[ENEMY_SYSTEM_HANDS_ON.md](ENEMY_SYSTEM_HANDS_ON.md)** - Step-by-step learning guide for building the enemy system
 
 ---
 
@@ -23,6 +24,8 @@ A tile-based game engine built with **Entity Component System (ECS)** architectu
 - **Tile-based rendering** with configurable tile types
 - **Collision detection** with AABB physics
 - **Frame-rate independent movement** with fixed timestep
+- **Enemy AI system** with wander and chase behaviors
+- **Configurable enemy types** with vision ranges and aggression levels
 
 ### Technology Stack
 - **Pygame-CE 2.5.6** - Game library

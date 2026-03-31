@@ -34,25 +34,22 @@ class CharacterAnimationSystem:
         return self.direction_map.get(key, current_direction)
 
     def update(self):
-        player = self.entity_manager.get_entity_by_id("player")
-        if not player:
-            return
+        characters = self.entity_manager.get_entities_with_components(["position", "velocity", "direction", "animated_sprite", "sprite_pool"])
+        for _character_id, components in characters:
+            velocity = components["velocity"]
+            direction = components["direction"]
+            animation = components["animated_sprite"]
+            sprites = components["sprite_pool"]
+
+            #@TODO: treat exceptionss (the variables can be None)
+
+            direction.set_direction(self._set_direction(velocity.vx, velocity.vy, direction.direction))
         
-        velocity = player["velocity"]
-        direction = player["direction"]
-        animation = player["animated_sprite"]
-        sprites = player["sprite_pool"]
+            # Check if moving
+            is_moving = velocity.vx != 0 or velocity.vy != 0
 
-        #@TODO: treat exceptionss (the variables can be None)
-
-        direction.set_direction(self._set_direction(velocity.vx, velocity.vy, direction.direction))
-        
-        # Check if moving
-        is_moving = velocity.vx != 0 or velocity.vy != 0
-
-        if is_moving:
-            animation.sprite = sprites[direction.direction]
-            animation.animate = True
-        else:
-            animation.sprite = sprites["idle_" + direction.direction]
+            if is_moving:
+                animation.sprite = sprites[direction.direction]    
+            else:
+                animation.sprite = sprites["idle_" + direction.direction]
             animation.animate = True

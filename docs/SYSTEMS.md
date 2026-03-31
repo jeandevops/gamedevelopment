@@ -9,6 +9,7 @@ Detailed reference for all game systems.
 4. [MovementSystem](#movementsystem)
 5. [CollisionSystem](#collisionsystem)
 6. [AnimationSystem](#animationsystem)
+7. [EnemiesSystem](#enemiesystem)
 
 ---
 
@@ -575,7 +576,7 @@ while True:
 
 1. Create sprite sheet: `assets/sprites/texture/tx-tileset-*.png`
 2. Add constant: `MY_TILE = 4`
-3. Add to SpritePool in `MapFactory`:
+3. Add to TileSpritePool in `MapFactory`:
 ```python
 MY_TILE: AnimatedSprite(..., horizontal_steps=N)
 ```
@@ -592,4 +593,204 @@ Future enhancements:
 - Animation events (callbacks on specific frames)
 - Sprite blending (alpha, color modulation)
 - Animation layers (multiple sprites per tile)
+
+---
+
+## EnemiesSystem
+
+**Purpose**: Implements enemy AI behavior including wander and chase mechanics based on player distance
+
+**File**: `src/ecs/systems/enemies_system.py`
+
+**Dependencies**:
+- `EntityManager`: To query enemy and player entities
+- `AIBehaviorComponent`: For enemy configuration (vision range, speeds, aggression)
+- `PositionComponent`, `VelocityComponent`: For movement calculation
+- `helpers.math.euclidean_distance`: Distance calculation
+- `random`, `math`: For randomization and trigonometry
+
+**How it works**:
+```
+1. Each frame (update is called):
+   a. Get player entity and position
+   b. Get all entities with ["position", "velocity", "ai_behavior"] components
+   c. For each enemy:
+      - Calculate distance to player
+      - If distance ≤ vision_range:
+        * If aggressive: call _chase_player()
+        * Else: call _wander()
+      - Else: call _wander()
+```
+
+**Key Methods**:
+
+### `update(delta_time)`
+Main update method called each frame:
+```python
+def update(self, delta_time: float) -> None:
+    player = self.entity_manager.get_entity_by_id("player")
+    if player is None:
+        return
+    
+    for enemy_id, components in self.entity_manager.get_entities_with_components(
+        ['position', 'velocity', 'ai_behavior']
+    ):
+        # Calculate distance to player
+        distance = euclidean_distance(
+            components['position'].x, 
+            components['position'].y,
+            player["position"].x,
+            player["position"].y
+        )
+        
+        # Decide behavior based on distance
+        if distance <= components['ai_behavior'].vision_range:
+            if components['ai_behavior'].aggressive:
+                self._chase_player(...)
+            else:
+                self._wander(...)
+        else:
+            self._wander(...)
+```
+
+### `_chase_player(pos, target_position, velocity, chase_speed)`
+Moves enemy directly toward player:
+
+**Algorithm**:
+1. Calculate direction vector: `(target_x - enemy_x, target_y - enemy_y)`
+2. Calculate magnitude (distance)
+3. Normalize direction: `(dx / magnitude, dy / magnitude)`
+4. Apply chase speed: `velocity = normalized_direction * chase_speed`
+
+**Result**: Enemy moves toward player at consistent speed in all directions
+
+```python
+def _chase_player(self, pos, target_position, velocity, chase_speed):
+    dx = target_position.x - pos.x
+    dy = target_position.y - pos.y
+    
+    magnitude = euclidean_distance(pos.x, pos.y, target_position.x, target_position.y)
+    if magnitude > 0:
+        velocity.vx = (dx / magnitude) * chase_speed
+        velocity.vy = (dy / magnitude) * chase_speed
+```
+
+**Why Normalize?** Prevents diagonal movement being √2 faster than cardinal directions.
+
+### `_wander(entity_id, pos, velocity, delta_time, wander_speed)`
+Implements random wandering behavior:
+
+**Algorithm**:
+1. Track wander timer for each enemy (picks new target every 1-3 seconds)
+2. When timer expires:
+   - Generate random angle: `0 to 2π radians`
+   - Generate velocity from angle: `(cos(angle) * speed, sin(angle) * speed)`
+   - Set new timer
+3. Apply calculated velocity to entity
+
+**Result**: Enemies wander in random directions uniformly
+
+```python
+def _wander(self, entity_id, pos, velocity, delta_time, wander_speed):
+    if entity_id not in self.wander_timers:
+        self.wander_timers[entity_id] = 0.0
+    
+    self.wander_timers[entity_id] -= delta_time
+    
+    if self.wander_timers[entity_id] <= 0:
+        angle = random.uniform(0, 2 * pi)
+        velocity.vx = wander_speed * cos(angle)
+        velocity.vy = wander_speed * sin(angle)
+        self.wander_timers[entity_id] = random.uniform(1.0, 3.0)
+```
+
+**Why Timer-based?** Enemies pick a new direction every 1-3 seconds for smoother, less jittery movement.
+
+**Why cos/sin?** Converts random angle to velocity components uniformly distributed in all directions.
+
+---
+
+### State Machine
+
+Enemies transition between two states based on distance:
+
+```
+WANDER STATE (distance > vision_range)
+├─ Speed: wander_speed (default: 50 px/s)
+├─ Movement: Random directions
+└─ Behavior: Gentle, exploratory
+
+CHASE STATE (distance ≤ vision_range AND aggressive)
+├─ Speed: chase_speed (default: 100 px/s)
+├─ Movement: Toward player
+└─ Behavior: Aggressive, hunting
+
+NO CHASE STATE (distance ≤ vision_range AND not aggressive)
+├─ Speed: wander_speed
+└─ Movement: Random (same as wander, but closer)
+```
+
+---
+
+### Configuration
+
+Enemy behavior defined in `helpers.constants.ENEMIES_SPECS`:
+
+```python
+ENEMIES_SPECS = {
+    "orc": {
+        "vision_range": 100,        # Detect player at 100px
+        "interaction_range": 50,    # Interaction radius (reserved)
+        "aggressive": True,         # Chase vs wander
+        "size": "normal",
+        "wander_speed": 50,         # Pixels/second while wandering
+        "chase_speed": 100          # Pixels/second while chasing
+    }
+}
+```
+
+**Tuning Guide**:
+- **vision_range**: Bigger = harder game, smaller = easier
+- **wander_speed**: <chase_speed ensures player can escape
+- **chase_speed**: Same as player speed (150 px/s) for fair chasing
+- **aggressive**: False = gentle NPCs, True = hunters
+
+---
+
+### Integration
+
+EnemiesSystem is called in the game loop:
+
+```python
+# In run.py, within fixed timestep loop:
+enemies_system.update(delta_time=_FIXED_DELTA_TIME)
+movement_system.update(delta_time=_FIXED_DELTA_TIME)
+```
+
+**Important**: EnemiesSystem runs BEFORE MovementSystem so velocities are set before movement applies them.
+
+---
+
+### Performance Characteristics
+
+| Aspect | Performance |
+|--------|-------------|
+| Distance calculation | O(1) per enemy |
+| Wander direction change | O(2) per timer expiry (~0.5x per second) |
+| Animation direction update | Handled by CharacterAnimationSystem |
+| Memory per enemy | ~8 bytes (timer tracking) |
+| Typical load | 2-10 enemies at 60 FPS = negligible |
+
+---
+
+### Extension Points
+
+Future enhancements:
+- **Pathfinding**: Use steering behaviors instead of direct chase
+- **Spatial awareness**: Avoid obstacles and other enemies
+- **Patrols**: Walk specific paths instead of random wander
+- **Formations**: Multiple enemies work together
+- **Behaviors**: Fear, curiosity, aggression levels
+- **Memory**: Remember where player was last seen
+- **Interactions**: Non-hostile NPCs with dialog
 - Sprite flipping (mirroring)

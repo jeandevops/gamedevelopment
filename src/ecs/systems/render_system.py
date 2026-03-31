@@ -29,17 +29,17 @@ class RenderingSystem:
 
         logger.debug(f"Rendering {len(tiles)} tiles, {visible_tiles_count} visible")
 
-        # Render player (for now, rendering as red rectangle)
-        player = self.entity_manager.get_entity_by_id("player")
-
-        if not player:
-            return  # No player to render
-        
-        self.screen.blit(
-            player["animated_sprite"].sprite.image,
+        # Render characters:
+        characters = self.entity_manager.get_entities_with_components(["position", "animated_sprite"])
+        for _entity_id, components in characters:
+            if "tile" in components:
+                continue  # Skip tiles, already rendered
+            
+            self.screen.blit(
+            components["animated_sprite"].sprite.image,
             (
-                player["position"].x - self.camera_component.x,
-                player["position"].y - self.camera_component.y
+                components["position"].x - self.camera_component.x,
+                components["position"].y - self.camera_component.y
             )
         )
 

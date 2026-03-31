@@ -9,13 +9,31 @@ TERRAIN_SPRITES_PATH = "assets/sprites/texture/"
 CRISTALS_SPRITES_PATH = "assets/sprites/cristals/"
 TILE_SET_SPRITE_FILE = "tx-tileset-grass.png"
 GREY_CRISTAL_SPRITE_FILE = "crystal-qubodup-ccby3-32-grey.png"
+TREE_AND_WATER_FILE = "tx-tree-and-water.png"
 CHARACTER_SPRITES_PATH = "assets/sprites/doll/"
 CHARACTER_FILE = "character-sprite-sheet.png"
-TREE_AND_WATER_FILE = "tx-tree-and-water.png"
+ENEMY_SPRITES_PATH = "assets/sprites/enemies/"
 
 TILE_SIZE = {
     "width": 32,
     "height": 32
+}
+
+ENEMIES_SPECS = {
+    "orc": {
+        "vision_range": 100,
+        "interaction_range": 50,
+        "aggressive": True,
+        "size": "normal",
+        "wander_speed": 50,
+        "chase_speed": 100
+    }
+}
+
+SIZE_MAP = {
+    "small": 16,
+    "normal": 32,
+    "large": 64
 }
 
 CAMERA_TRIGGER_MARGIN = 200
@@ -23,7 +41,7 @@ CAMERA_TRIGGER_MARGIN = 200
 CAMERA_WIDTH = 800
 CAMERA_HEIGHT = 600
 
-SPEED = 150 # Character speed in pixels per second
+PLAYER_SPEED = 150 # Character speed in pixels per second
 CAMERA_LERP_SPEED = 0.5 # Camera interpolation speed (higher is snappier, lower is smoother)
 
 # Collision System

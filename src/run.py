@@ -3,8 +3,10 @@ import os
 
 # Utils
 from helpers.constants import CAMERA_WIDTH, CAMERA_HEIGHT, FPS, CAMERA_LERP_SPEED
+from helpers.map_file_loader import load_map
 from world.map_loader import MapFactory
 from world.player_factory import PlayerFactory
+from world.enemies_factory import EnemiesFactory
 
 # Components:
 from ecs.components.camera import CameraComponent
@@ -16,6 +18,7 @@ from ecs.systems.event_handler_system import EventHandlerSystem
 from ecs.systems.movement_system import MovementSystem
 from ecs.systems.animation_system import AnimationSystem
 from ecs.systems.character_animation_system import CharacterAnimationSystem
+from ecs.systems.enemies_system import EnemiesSystem
 
 # Entity Manager
 from ecs.entity_manager import EntityManager
@@ -25,12 +28,16 @@ pygame.display.set_caption("World of Tiles")
 
 entity_manager = EntityManager()
 
-# Load map
-map_factory = MapFactory()
-map_factory.load_map(entity_manager, "forest")
+# Load first map:
+map_data = load_map("forest")
+map_factory = MapFactory(map_data=map_data)
+map_factory.load_tiles(entity_manager)
+enemy_factory = EnemiesFactory(entity_manager, map_data)
+enemy_factory.create_enemies()
 
 # Create player
-PlayerFactory.create_player(entity_manager, x=32, y=32)
+player_factory = PlayerFactory()
+player_factory.create_player(entity_manager, x=32, y=32)
 
 # Initialize camera
 camera_component = CameraComponent(x=0, y=0, viewport_width=CAMERA_WIDTH, viewport_height=CAMERA_HEIGHT, lerp_speed=CAMERA_LERP_SPEED)
@@ -41,6 +48,7 @@ event_handler_system = EventHandlerSystem(entity_manager)
 movement_system = MovementSystem(entity_manager)
 animation_system = AnimationSystem(entity_manager)
 player_animation_system = CharacterAnimationSystem(entity_manager)
+enemies_system = EnemiesSystem(entity_manager)
 
 # Initialize rendering
 fullscreen_mode = pygame.FULLSCREEN | pygame.SCALED if os.getenv("FULLSCREEN", "0") == "1" else pygame.SCALED
@@ -68,6 +76,7 @@ while True:
     # Update movement with fixed timestep, using time_accumulator as a buffer
     # to prevent inconsistent moves during lag spikes
     while time_accumulator >= _FIXED_DELTA_TIME:
+        enemies_system.update(delta_time=_FIXED_DELTA_TIME)
         movement_system.update(delta_time=_FIXED_DELTA_TIME)
         time_accumulator -= _FIXED_DELTA_TIME
     

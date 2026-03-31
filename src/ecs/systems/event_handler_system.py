@@ -1,4 +1,4 @@
-from helpers.constants import SPEED
+from helpers.constants import PLAYER_SPEED
 from ecs.entity_manager import EntityManager
 import pygame
 from pygame.locals import QUIT, K_w, K_s, K_a, K_d
@@ -32,13 +32,13 @@ class EventHandlerSystem:
         
         # Update velocity based on currently pressed keys
         if keys[K_w]:
-            vy = -SPEED
+            vy = -PLAYER_SPEED
         if keys[K_s]:
-            vy = SPEED
+            vy = PLAYER_SPEED
         if keys[K_a]:
-            vx = -SPEED
+            vx = -PLAYER_SPEED
         if keys[K_d]:
-            vx = SPEED
+            vx = PLAYER_SPEED
         
         # Set the velocity
         player_velocity.set_velocity(vx, vy)
