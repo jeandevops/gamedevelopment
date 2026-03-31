@@ -36,7 +36,8 @@ enemy_factory = EnemiesFactory(entity_manager, map_data)
 enemy_factory.create_enemies()
 
 # Create player
-PlayerFactory.create_player(entity_manager, x=32, y=32)
+player_factory = PlayerFactory()
+player_factory.create_player(entity_manager, x=32, y=32)
 
 # Initialize camera
 camera_component = CameraComponent(x=0, y=0, viewport_width=CAMERA_WIDTH, viewport_height=CAMERA_HEIGHT, lerp_speed=CAMERA_LERP_SPEED)
