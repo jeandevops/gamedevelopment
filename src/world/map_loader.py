@@ -10,6 +10,7 @@ from helpers.constants import (
     ERROR_MAP_PARSE_FAILED,
     ERROR_MAP_EMPTY,
     ERROR_TILE_LOADING_FAILED,
+    DEFAULT_ANIMATION_FRAME_DURATION
 )
 from helpers.logger import logger
 import os
@@ -43,6 +44,16 @@ class TileSpritePool:
         if not sprite:
             logger.warning(f"No sprite found for tile type: {tile_type}")
         return sprite
+
+    def get_animation_speed(self, tile_type: int) -> int:
+        """Get animation speed for a given tile type"""
+        animation_speed_map = {
+            GRASS: 500,
+            WATER: 300,
+            SAND: 400,
+            WOOD: 150
+        }
+        return animation_speed_map.get(tile_type, DEFAULT_ANIMATION_FRAME_DURATION)
         
 class MapFactory:
     def __init__(self, map_data: str|None = None):
@@ -98,10 +109,11 @@ class MapFactory:
                     position = PositionComponent(x=col_index * TILE_SIZE["width"], y=row_index * TILE_SIZE["height"])
                     tile = TileComponent(tile_type=tile_type)
                     animation = sprites_pool.get_sprite(tile_type)
+                    frame_duration = sprites_pool.get_animation_speed(tile_type)
                     if not animation:
                         logger.warning(f"No sprite available for tile type {tile_type} at ({row_index}, {col_index}), skipping")
                         continue
-                    animated_sprite = SpriteComponent(animation)
+                    animated_sprite = SpriteComponent(animation, frame_duration=frame_duration)
                     
                     # Build components dict - only add collision if it's a solid tile
                     components = {
