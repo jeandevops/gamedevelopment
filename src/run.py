@@ -6,6 +6,7 @@ from helpers.constants import CAMERA_WIDTH, CAMERA_HEIGHT, FPS, CAMERA_LERP_SPEE
 from helpers.map_file_loader import load_map
 from world.map_loader import MapFactory
 from world.player_factory import PlayerFactory
+from world.enemies_factory import EnemiesFactory
 
 # Components:
 from ecs.components.camera import CameraComponent
@@ -31,6 +32,8 @@ entity_manager = EntityManager()
 map_data = load_map("forest")
 map_factory = MapFactory(map_data=map_data)
 map_factory.load_tiles(entity_manager)
+enemy_factory = EnemiesFactory(entity_manager, map_data)
+enemy_factory.create_enemies()
 
 # Create player
 PlayerFactory.create_player(entity_manager, x=32, y=32)

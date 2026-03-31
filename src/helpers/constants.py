@@ -13,11 +13,25 @@ TREE_AND_WATER_FILE = "tx-tree-and-water.png"
 CHARACTER_SPRITES_PATH = "assets/sprites/doll/"
 CHARACTER_FILE = "character-sprite-sheet.png"
 ENEMY_SPRITES_PATH = "assets/sprites/enemies/"
-ENEMY_FILE = "Orc-Peon-Red.png"
 
 TILE_SIZE = {
     "width": 32,
     "height": 32
+}
+
+ENEMIES_SPECS = {
+    "orc": {
+        "vision_range": 100,
+        "interaction_range": 50,
+        "aggressive": True,
+        "size": "normal"
+    }
+}
+
+SIZE_MAP = {
+    "small": 16,
+    "normal": 32,
+    "large": 64
 }
 
 CAMERA_TRIGGER_MARGIN = 200

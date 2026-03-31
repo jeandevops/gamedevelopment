@@ -15,12 +15,11 @@ from helpers.logger import logger
 import os
 from world.sprites_maker import AnimatedSprite
 import json
-from typing import Any
 
-class SpritePool:
+class TileSpritePool:
     def __init__(self):
         """ Initializes the sprite pool with preloaded sprites for different tile types """
-        logger.debug("Initializing sprite pool...")
+        logger.debug("Initializing tiles sprite pool...")
         root_path = os.path.dirname(os.path.abspath(__file__))
         terrain_textures_path = os.path.join(root_path, "..", *TERRAIN_SPRITES_PATH.split("/"))
         cristals_textures_path = os.path.join(root_path, "..", *CRISTALS_SPRITES_PATH.split("/"))
@@ -46,7 +45,7 @@ class SpritePool:
         return sprite
         
 class MapFactory:
-    def __init__(self, map_data: Any = None):
+    def __init__(self, map_data: str|None = None):
         self.map_data = map_data
 
     def _create_collision_from_tile_type(self, tile_type: int) -> CollisionComponent|None:
@@ -67,7 +66,12 @@ class MapFactory:
 
     def load_tiles(self, entity_manager: EntityManager) -> None:
         """Loads the map from a file and creates tile entities in the EntityManager"""
-        sprites_pool = SpritePool()
+        if not self.map_data:
+            error_msg = ERROR_MAP_EMPTY
+            logger.error(error_msg)
+            raise ValueError(error_msg)
+        
+        sprites_pool = TileSpritePool()
 
         try:
             parsed_map_data = self._parse_map_data()
