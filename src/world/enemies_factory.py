@@ -186,8 +186,9 @@ class EnemiesFactory:
             logger.warning("No enemies data provided, skipping enemy creation")
             return
         
-        # List of tuples containing enemy types and sizes:
+        # List containing enemy types:
         enemy_types = [enemy["type"] for enemy in self.enemies_data]
+        enemy_types = list(set(enemy_types))  # Remove duplicates
 
         # For each type listed create the sprites:
         enemies_sprites_pools = {enemy_type: EnemiesSpritePool(enemy_type) for enemy_type in enemy_types}
