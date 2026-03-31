@@ -25,7 +25,7 @@ ENEMIES_SPECS = {
         "interaction_range": 50,
         "aggressive": True,
         "size": "normal",
-        "wander_speed": 10,
+        "wander_speed": 50,
         "chase_speed": 100
     }
 }

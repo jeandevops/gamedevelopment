@@ -18,3 +18,8 @@ class EntityManager:
             if all(component_type in components for component_type in component_type_list):
                 result.append((entity_id, components))
         return result
+    
+    def delete_entity(self, entity_id: str) -> None:
+        """Deletes an entity from the manager"""
+        if entity_id in self.entities:
+            del self.entities[entity_id]

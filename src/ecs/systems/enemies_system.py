@@ -4,6 +4,7 @@ from ecs.components.velocity import VelocityComponent
 from ecs.systems.collision_system import CollisionSystem
 from helpers.math import euclidean_distance
 import random
+from math import cos, sin, pi
 
 class EnemiesSystem:
     def __init__(self, entity_manager: EntityManager):
@@ -67,9 +68,13 @@ class EnemiesSystem:
 
         if self.wander_timers[entity_id] <= 0:
             # Choose a random direction to wander in
-            angle = random.uniform(0, 2 * 3.14159) # Random angle in radians
-            speed = wander_speed
-            velocity.vx = speed * 3.14159 * (angle / (2* 3.14159)) # Convert angle to velocity components
-            velocity.vy = speed * 3.14159 * ((angle - 3.14159/2) / (2* 3.14159)) # Convert angle to velocity components
+            angle = random.uniform(0, 2 * pi)  # Random angle in radians
+            velocity.vx = wander_speed * cos(angle)  # X component
+            velocity.vy = wander_speed * sin(angle)  # Y component
 
             self.wander_timers[entity_id] = random.uniform(1.0, 3.0)  # Wander for 1-3 seconds
+
+    # Will be used when we implement enemy death
+    def _cleanup_enemy(self, enemy_id: str):
+        if enemy_id in self.wander_timers:
+            del self.wander_timers[enemy_id]
