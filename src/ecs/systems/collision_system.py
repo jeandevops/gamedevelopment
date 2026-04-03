@@ -14,10 +14,10 @@ class CollisionSystem:
         moving_entity = self.entity_manager.get_entity_by_id(entity_id)
 
         if not moving_entity:
-            return False  # Entity not found, no collision
+            raise ValueError("Entity not found")  # Entity not found, no collision
         
         if "sprite" not in moving_entity and "animated_sprite" not in moving_entity:
-            return False  # No sprite to check collision against
+            raise ValueError("Entity must have a sprite or animated_sprite component for collision detection")
         
         moving_sprite = moving_entity.get("sprite") or moving_entity.get("animated_sprite")
 
