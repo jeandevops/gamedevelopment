@@ -1,13 +1,19 @@
 from ecs.entity_manager import EntityManager
 from ecs.systems.collision_system import CollisionSystem
+from helpers.game_state_manager import GameStateManager
 
 class MovementSystem:
-    def __init__(self, entity_manager: EntityManager):
+    def __init__(self, entity_manager: EntityManager, state_manager: GameStateManager):
         self.entity_manager = entity_manager
+        self.state_manager = state_manager
         self.collision_system = CollisionSystem(entity_manager)
 
     def update(self, delta_time: float) -> None:
         """Updates the position of all entities based on their velocity, checking for collisions"""
+        state = self.state_manager.get_state()
+        if state != "PLAYING":
+            return
+
         for entity_id, components in self.entity_manager.get_entities_with_components(['position', 'velocity']):
             position = components['position']
             velocity = components['velocity']

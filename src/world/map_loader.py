@@ -56,7 +56,7 @@ class TileSpritePool:
         return animation_speed_map.get(tile_type, DEFAULT_ANIMATION_FRAME_DURATION)
         
 class MapFactory:
-    def __init__(self, map_data: str|None = None):
+    def __init__(self, map_data: str):
         self.map_data = map_data
 
     def _create_collision_from_tile_type(self, tile_type: int) -> CollisionComponent|None:
@@ -74,6 +74,27 @@ class MapFactory:
         
         # Walkable tiles don't need a collision component
         return None
+    
+    def _parse_map_data(self) -> list[list[int]]:
+        """Parses the raw map data into a usable format"""
+
+        value_conversion = {
+            '.': GRASS,
+            '~': WATER,
+            '^': SAND,
+            '#': WOOD
+        }
+
+        self.map_data = json.loads(self.map_data)
+        
+        parsed_map_data = []
+        for line in self.map_data["tiles"]:
+            parsed_line = []
+            for tile in line.split():
+                # Use .get() with GRASS as default for invalid tiles
+                parsed_line.append(value_conversion.get(tile, GRASS))
+            parsed_map_data.append(parsed_line)
+        return parsed_map_data
 
     def load_tiles(self, entity_manager: EntityManager) -> None:
         """Loads the map from a file and creates tile entities in the EntityManager"""
@@ -133,23 +154,22 @@ class MapFactory:
             logger.error(error_msg)
             raise RuntimeError(error_msg)
 
-    def _parse_map_data(self) -> list[list[int]]:
-        """Parses the raw map data into a usable format"""
+    #@TODO: To implement the isometric grid in the future
+    def generate_battle_grid(self, camera_x: int, camera_y: int, viewport_width: int, viewport_height: int, entity_manager: EntityManager) -> list[tuple[int, int, int]]:
+        """Generates a battle grid based on the current camera position and viewport size"""
+        grid = []
+        start_col = camera_x // TILE_SIZE["width"]
+        end_col = (camera_x + viewport_width) // TILE_SIZE["width"]
+        start_row = camera_y // TILE_SIZE["height"]
+        end_row = (camera_y + viewport_height) // TILE_SIZE["height"]
 
-        value_conversion = {
-            '.': GRASS,
-            '~': WATER,
-            '^': SAND,
-            '#': WOOD
-        }
-
-        self.map_data = json.loads(self.map_data)
+        for row in range(start_row, end_row + 1):
+            for col in range(start_col, end_col + 1):
+                entity_id = f"tile_{row}_{col}"
+                tile_entity = entity_manager.get_entity_by_id(entity_id)
+                if tile_entity and "tile" in tile_entity:
+                    tile_type = tile_entity["tile"].tile_type
+                    grid.append((row, col, tile_type))
         
-        parsed_map_data = []
-        for line in self.map_data["tiles"]:
-            parsed_line = []
-            for tile in line.split():
-                # Use .get() with GRASS as default for invalid tiles
-                parsed_line.append(value_conversion.get(tile, GRASS))
-            parsed_map_data.append(parsed_line)
-        return parsed_map_data
+        logger.debug(f"Generated battle grid with {len(grid)} tiles")
+        return grid
