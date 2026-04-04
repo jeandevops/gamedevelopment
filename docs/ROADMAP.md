@@ -469,33 +469,57 @@ This document tracks the development progress of the tile-based game engine. It 
 
 ## Planned Features (Next Phases)
 
-### Phase 11: Isometric Battle Grid
-- [ ] Implement grid mechanics
-  - [ ] Turns;
-  - [ ] Movement;
-  - [ ] Attack and damage;
-  - [ ] End of battle;
+### Phase 11: Battle System (In Progress - Learning Phase)
 
-### Phase 12: Visual Layer x Game Layer
-- [ ] Implement the visual layer of scenarios
+**Implementation Steps**:
+- [x] Step 1: Understand battle architecture (game states, state machine)
+- [ ] Step 2: Create GameStateManager (tracks PLAYING, BATTLE, PAUSED states)
+- [ ] Step 3: Implement state transitions (trigger when player enters interaction_range)
+- [ ] Step 4: Freeze game systems during battle (conditional execution)
+- [ ] Step 5: Create battle screen UI (HP bars, action buttons, turn log)
+- [ ] Step 6: Implement battle input handling (A=attack, D=defend, F=flee)
+- [ ] Step 7: Implement turn-based combat logic (damage calculation, turn alternation)
+- [ ] Step 8: Integrate everything into game loop
+- [ ] Step 9: Handle edge cases (multiple enemies, dialogue, animations)
+- [ ] Step 10: Comprehensive testing and verification
 
-### Phase 13: UI System
+**Battle System Features**:
+- Game state manager (singleton)
+- State transitions (PLAYING ↔ BATTLE)
+- System freezing (pause movement/animation during battles)
+- Turn-based combat mechanics
+- Player actions: ATTACK (5-15 dmg), DEFEND (50% dmg), FLEE (30% success)
+- Enemy actions: based on AI behavior
+- Damage calculation: base + random variance
+- HP tracking and death detection
+- Battle conclusion (victory/defeat/flee)
+- UI display (action buttons, HP bars, combat log)
+
+**Estimated Time**: 3-4 hours of focused implementation
+
+### Phase 12: Isometric Battle Grid
+- [ ] Implement grid-based battle mechanics
+- [ ] Turn-based grid movement
+- [ ] Range-based attack calculations
+- [ ] Tactical positioning system
+
+### Phase 13: Visual Layer & Game Layers
+- [ ] Implement the visual layer system
+- [ ] Parallax scrolling for depth
+- [ ] Foreground/background layer management
+
+### Phase 14: Enhanced UI System
 - [ ] Health/status bar rendering
 - [ ] HUD (heads-up display)
 - [ ] Menu system
 - [ ] Pause functionality
-
-### Phase 14: Game State Management
-- [ ] Implement state machine
-- [ ] Game states: Menu, Playing, Paused, GameOver
-- [ ] State transitions
-- [ ] Save/load functionality
+- [ ] Dialogue system
 
 ### Phase 15: Audio System
 - [ ] Create `AudioSystem` for sound effects
 - [ ] Background music support
 - [ ] Sound volume control
-- [ ] Audio configuration6
+- [ ] Audio configuration
 
 ### Phase 16: Polish & Optimization
 - [ ] Performance profiling

@@ -4,14 +4,23 @@ A tile-based game engine built with **Entity Component System (ECS)** architectu
 
 ## Quick Navigation
 
+**Core Documentation**:
 - **[SYSTEMS.md](SYSTEMS.md)** - How rendering, camera, input, movement, collision, animation, and enemy AI work
-- **[COMPONENTS.md](COMPONENTS.md)** - Reference for Position, Tile, Camera, Velocity, Player, AnimatedSprite, Direction, and AIBehavior components
+- **[COMPONENTS.md](COMPONENTS.md)** - Reference for all entity components
 - **[PHYSICS.md](PHYSICS.md)** - Delta time, fixed timestep, and frame-rate independent movement
-- **[ANIMATION.md](ANIMATION.md)** - Sprite pooling, frame-rate independent animation, and timing
-- **[LERP_MATH.md](LERP_MATH.md)** - Linear interpolation math and delta time explained
-- **[CULLING.md](CULLING.md)** - Viewport culling optimization technique
+- **[ANIMATION.md](ANIMATION.md)** - Sprite pooling and frame timing
+- **[LERP_MATH.md](LERP_MATH.md)** - Linear interpolation math explained
+- **[CULLING.md](CULLING.md)** - Viewport culling optimization
 - **[ROADMAP.md](ROADMAP.md)** - Project phases and progress tracking
-- **[ENEMY_SYSTEM_HANDS_ON.md](ENEMY_SYSTEM_HANDS_ON.md)** - Step-by-step learning guide for building the enemy system
+
+**Learning Guides** (hands-on, step-by-step):
+- **[ENEMY_SYSTEM_HANDS_ON.md](ENEMY_SYSTEM_HANDS_ON.md)** - Build the AI system yourself (11 steps)
+- **[BATTLE_SYSTEM_HANDS_ON.md](../BATTLE_SYSTEM_HANDS_ON.md)** - Build the battle system yourself (10 steps)
+
+**Checklists & References**:
+- **[BUILD_CHECKLIST.md](../BUILD_CHECKLIST.md)** - Track enemy system implementation
+- **[BATTLE_CHECKLIST.md](../BATTLE_CHECKLIST.md)** - Track battle system implementation
+- **[BATTLE_VISUAL_GUIDE.md](../BATTLE_VISUAL_GUIDE.md)** - Diagrams and patterns
 
 ---
 

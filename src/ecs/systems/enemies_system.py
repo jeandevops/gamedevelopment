@@ -1,19 +1,23 @@
 from ecs.entity_manager import EntityManager
+from helpers.game_state_manager import GameStateManager
 from ecs.components.position import PositionComponent
 from ecs.components.velocity import VelocityComponent
-from ecs.systems.collision_system import CollisionSystem
 from helpers.math import euclidean_distance
 import random
 from math import cos, sin, pi
 
 class EnemiesSystem:
-    def __init__(self, entity_manager: EntityManager):
+    def __init__(self, entity_manager: EntityManager, state_manager: GameStateManager):
         self.entity_manager = entity_manager
-        self.collision_system = CollisionSystem(entity_manager)
-        self.wander_timers = {}  # To track wandering timers for non-aggressive enemies
+        self.state_manager = state_manager
+        self.wander_timers = {}  # To track wandering timers for each enemy
 
-    def update(self, delta_time: float) -> None:
+    def update(self, delta_time: float) -> None | str:
         """Updates the position of all entities based on their velocity, checking for collisions"""
+
+        if self.state_manager.get_state() != "PLAYING":
+            return
+        
         player = self.entity_manager.get_entity_by_id("player")
         if player is None:
             return
@@ -36,18 +40,15 @@ class EnemiesSystem:
             # Calculate distance to player
             distance_to_player = euclidean_distance(position.x, position.y, player_x, player_y)
 
-            if distance_to_player <= vision_range:
-                # Player is within vision range, set velocity towards player
-                if agressivity:
-                    self._chase_player(position, player["position"], velocity, chase_speed)
-                else:
-                    self._wander(enemy_id, position, velocity, delta_time, wander_speed)
-            elif distance_to_player <= interaction_range:
-                # Player is within interaction range, implement specific behavior
-                pass
-            else:
-                # Enemy keep wandering
+            if distance_to_player > vision_range:
+                # Player is out of vision range, enemy should wander
                 self._wander(enemy_id, position, velocity, delta_time, wander_speed)
+
+            if agressivity and distance_to_player <= vision_range:
+                self._chase_player(position, player["position"], velocity, chase_speed)
+
+            if agressivity and distance_to_player <= interaction_range:
+                return self.state_manager.start_battle(enemy_id)
 
     def _chase_player(self, pos: PositionComponent, target_position: PositionComponent, velocity: VelocityComponent, chase_speed: int) -> None:
         """Sets the velocity of the enemy to move towards the player"""
