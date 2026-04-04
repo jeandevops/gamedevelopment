@@ -1,20 +1,15 @@
 from ecs.components.camera import CameraComponent
 from helpers.constants import CAMERA_TRIGGER_MARGIN
 from helpers.math import lerp
-from helpers.game_state_manager import GameStateManager
-
 
 class CameraSystem:
-    def __init__(self, camera: CameraComponent, state_manager: GameStateManager):
+    def __init__(self, camera: CameraComponent):
         """Initializes the CameraSystem with a camera component"""
         self.camera = camera
         self.trigger_margin = CAMERA_TRIGGER_MARGIN
-        self.state_manager = state_manager
 
     def update(self, target_x: float, target_y: float, delta_time: float) -> None:
         """Updates the camera position to follow the target coordinates with lerp"""
-        if self.state_manager.get_state() != "PLAYING":
-            return 
         
         # Calculate distances from camera center to target
         camera_center_x = self.camera.x + self.camera.viewport_width / 2
