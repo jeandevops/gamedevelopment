@@ -3,10 +3,12 @@ from ecs.components.velocity import VelocityComponent
 from ecs.components.direction import DirectionComponent
 from ecs.entity_manager import EntityManager
 from ecs.components.sprite import SpriteComponent
+from ecs.components.hp import HPComponent
 from .sprites_maker import AnimatedSprite
 from helpers.constants import (
     CHARACTER_SPRITES_PATH,
-    CHARACTER_FILE
+    CHARACTER_FILE,
+    PLAYER_MAX_HP
 )
 
 class PlayerFactory:
@@ -169,6 +171,7 @@ class PlayerFactory:
             "position": PositionComponent(x=x, y=y),
             "velocity": VelocityComponent(vx=0, vy=0),
             "direction": DirectionComponent(),
+            "hp": HPComponent(max_hp=PLAYER_MAX_HP),
             "animated_sprite": SpriteComponent(sprite=sprites["down"]), # Default facing down
             "sprite_pool": sprites
         }

@@ -20,6 +20,8 @@ TILE_SIZE = {
 }
 
 PLAYER_MAX_HP = 100
+UNNARMED_STRIKE_DAMAGE = 10
+DEFAULT_CRITICAL_CHANCE = 0.1
 
 ENEMIES_SPECS = {
     "orc": {
@@ -29,10 +31,8 @@ ENEMIES_SPECS = {
         "size": "normal",
         "wander_speed": 50,
         "chase_speed": 100,
-        "specs": {
-            "health": 100,
-            "damage": 20
-        }
+        "hp": 50,
+        "damage": 10
     }
 }
 

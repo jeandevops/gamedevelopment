@@ -22,6 +22,7 @@ from ecs.systems.movement_system import MovementSystem
 from ecs.systems.animation_system import AnimationSystem
 from ecs.systems.character_animation_system import CharacterAnimationSystem
 from ecs.systems.enemies_system import EnemiesSystem
+from ecs.systems.battle_ui_system import BattleUISystem
 
 # Entity Manager
 from ecs.entity_manager import EntityManager
@@ -42,6 +43,7 @@ class Game(ABC):
                  enemies_system: EnemiesSystem | None,
                  screen: pygame.Surface | None,
                  rendering_system: RenderingSystem | None,
+                 battle_ui_system: BattleUISystem | None,
                  ):
         raise NotImplementedError("Subclasses must implement this method")
 
@@ -123,6 +125,7 @@ class BattleGame(Game):
                  player_animation_system: CharacterAnimationSystem,
                  screen: pygame.Surface,
                  rendering_system: RenderingSystem,
+                 battle_ui_system: BattleUISystem,
                  ):
         self.entity_manager = entity_manager
         self.state_manager = state_manager
@@ -131,6 +134,7 @@ class BattleGame(Game):
         self.player_animation_system = player_animation_system
         self.screen = screen
         self.rendering_system = rendering_system
+        self.battle_ui_system = battle_ui_system
 
     def _render(self, delta_time: float):
         # Render and animate:
@@ -138,6 +142,12 @@ class BattleGame(Game):
         self.screen.fill((0, 0, 0))
         self.animation_system.animate(delta_time=delta_time)
         self.rendering_system.render()
+        
+        # Render battle UI (HP bars)
+        enemy_id = self.state_manager.get_current_enemy()
+        if enemy_id:
+            self.battle_ui_system.update(enemy_id)
+        
         pygame.display.update()
 
     def main_loop(self):
@@ -148,7 +158,6 @@ class BattleGame(Game):
             # Get elapsed time since last frame and limit to target FPS
             milliseconds_elapsed = clock.tick(FPS)
             delta_time = milliseconds_elapsed / 1000.0
-
             # Process battle menu events
             self.event_handler_system.process_events(pygame.event.get())
             self._render(delta_time)
@@ -245,6 +254,8 @@ class Run:
 
                 event_handler_system = BattleEventHandlerSystem(entity_manager, state_manager)
 
+                battle_ui_system = BattleUISystem(entity_manager, screen)
+
                 battle_game = BattleGame(
                     entity_manager=entity_manager,
                     state_manager=state_manager,
@@ -253,6 +264,7 @@ class Run:
                     player_animation_system=player_animation_system,
                     screen = screen,
                     rendering_system=rendering_system,
+                    battle_ui_system=battle_ui_system,
                 )
                 state_manager.change_state("BATTLE_STARTED")
                 battle_game.main_loop()
