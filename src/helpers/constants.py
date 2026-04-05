@@ -1,8 +1,8 @@
 BLACK = (0, 0, 0)
-WOOD = 0
-GRASS = 1
-SAND = 2
-WATER = 3
+MARGIN = 0
+COMMOM_TERRAIN = 1
+LANDSCAPING = 2
+OBSTACLES = 3
 
 MAPS_PATH = "assets/maps/"
 TERRAIN_SPRITES_PATH = "assets/sprites/texture/"
@@ -19,6 +19,8 @@ TILE_SIZE = {
     "height": 32
 }
 
+PLAYER_MAX_HP = 100
+
 ENEMIES_SPECS = {
     "orc": {
         "vision_range": 100,
@@ -26,7 +28,11 @@ ENEMIES_SPECS = {
         "aggressive": True,
         "size": "normal",
         "wander_speed": 50,
-        "chase_speed": 100
+        "chase_speed": 100,
+        "specs": {
+            "health": 100,
+            "damage": 20
+        }
     }
 }
 

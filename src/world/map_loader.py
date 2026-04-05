@@ -4,7 +4,7 @@ from ecs.components.collision import CollisionComponent
 from ecs.components.position import PositionComponent
 from ecs.components.sprite import SpriteComponent
 from helpers.constants import (
-    TILE_SIZE, GRASS, SAND, WATER, WOOD,
+    TILE_SIZE, COMMOM_TERRAIN, LANDSCAPING, OBSTACLES, MARGIN,
     TERRAIN_SPRITES_PATH, CRISTALS_SPRITES_PATH,
     TILE_SET_SPRITE_FILE, GREY_CRISTAL_SPRITE_FILE, TREE_AND_WATER_FILE,
     ERROR_MAP_PARSE_FAILED,
@@ -27,10 +27,10 @@ class TileSpritePool:
 
         try:
             sprites_pool = {
-                GRASS: AnimatedSprite(file_path = terrain_textures_path, file_name=TILE_SET_SPRITE_FILE, coordinate_x=0, coordinate_y=0, width=TILE_SIZE["width"], height=TILE_SIZE["height"], horizontal_steps=4),
-                WATER: AnimatedSprite(file_path = terrain_textures_path, file_name=TREE_AND_WATER_FILE, coordinate_x=0, coordinate_y=0, width=TILE_SIZE["width"], height=TILE_SIZE["height"], horizontal_steps=3),
-                SAND: AnimatedSprite(file_path = terrain_textures_path, file_name=TILE_SET_SPRITE_FILE, coordinate_x=128, coordinate_y=96, width=TILE_SIZE["width"], height=TILE_SIZE["height"], horizontal_steps=3),
-                WOOD: AnimatedSprite(file_path = cristals_textures_path, file_name=GREY_CRISTAL_SPRITE_FILE, coordinate_x=0, coordinate_y=0, width=TILE_SIZE["width"], height=TILE_SIZE["height"], horizontal_steps=8)
+                COMMOM_TERRAIN: AnimatedSprite(file_path = terrain_textures_path, file_name=TILE_SET_SPRITE_FILE, coordinate_x=0, coordinate_y=0, width=TILE_SIZE["width"], height=TILE_SIZE["height"], horizontal_steps=4),
+                OBSTACLES: AnimatedSprite(file_path = terrain_textures_path, file_name=TREE_AND_WATER_FILE, coordinate_x=0, coordinate_y=0, width=TILE_SIZE["width"], height=TILE_SIZE["height"], horizontal_steps=3),
+                LANDSCAPING: AnimatedSprite(file_path = terrain_textures_path, file_name=TILE_SET_SPRITE_FILE, coordinate_x=128, coordinate_y=96, width=TILE_SIZE["width"], height=TILE_SIZE["height"], horizontal_steps=3),
+                MARGIN: AnimatedSprite(file_path = cristals_textures_path, file_name=GREY_CRISTAL_SPRITE_FILE, coordinate_x=0, coordinate_y=0, width=TILE_SIZE["width"], height=TILE_SIZE["height"], horizontal_steps=8)
             }
             self.pool = sprites_pool
             logger.info(f"Sprite pool initialized with {len(sprites_pool)} sprite types")
@@ -48,10 +48,10 @@ class TileSpritePool:
     def get_animation_speed(self, tile_type: int) -> int:
         """Get animation speed for a given tile type"""
         animation_speed_map = {
-            GRASS: 500,
-            WATER: 300,
-            SAND: 400,
-            WOOD: 150
+            COMMOM_TERRAIN: 500,
+            OBSTACLES: 300,
+            LANDSCAPING: 400,
+            MARGIN: 150
         }
         return animation_speed_map.get(tile_type, DEFAULT_ANIMATION_FRAME_DURATION)
         
@@ -64,8 +64,8 @@ class MapFactory:
         # Tolerance map: if tile_type not in this map, it's walkable (no collision component needed)
         # Values represent collision tolerance in pixels
         collision_map = {
-            WATER: 16,
-            WOOD: 0,
+            OBSTACLES: 16,
+            MARGIN: 0,
         }
         
         if tile_type in collision_map:
@@ -79,10 +79,10 @@ class MapFactory:
         """Parses the raw map data into a usable format"""
 
         value_conversion = {
-            '.': GRASS,
-            '~': WATER,
-            '^': SAND,
-            '#': WOOD
+            '.': COMMOM_TERRAIN,
+            '~': OBSTACLES,
+            '^': LANDSCAPING,
+            '#': MARGIN
         }
 
         self.map_data = json.loads(self.map_data)
@@ -92,7 +92,7 @@ class MapFactory:
             parsed_line = []
             for tile in line.split():
                 # Use .get() with GRASS as default for invalid tiles
-                parsed_line.append(value_conversion.get(tile, GRASS))
+                parsed_line.append(value_conversion.get(tile, COMMOM_TERRAIN))
             parsed_map_data.append(parsed_line)
         return parsed_map_data
 

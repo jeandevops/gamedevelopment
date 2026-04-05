@@ -1,6 +1,3 @@
-from helpers.constants import GRASS, SAND, WATER, WOOD
-
-
 class CollisionComponent:
     """
     Defines collision behavior for an entity.
