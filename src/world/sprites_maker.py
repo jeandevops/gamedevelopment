@@ -19,7 +19,7 @@ class AnimatedSprite(pygame.sprite.Sprite):
         self.images = self._load_images(file_path, file_name, coordinate_x, coordinate_y, width, height, horizontal_steps, vertical_steps)
         self.image = self.images[0]
         self.rect = self.image.get_rect()
-        logger.info(f"AnimatedSprite loaded successfully: {len(self.images)} frames")
+        logger.debug(f"AnimatedSprite loaded successfully: {len(self.images)} frames")
     
     def get_frame(self, frame_index: int) -> pygame.Surface:
         """Returns the image at the specified frame index (stateless)"""
