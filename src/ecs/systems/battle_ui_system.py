@@ -1,3 +1,4 @@
+from ecs.components.hp import HPComponent
 from ecs.entity_manager import EntityManager
 import pygame
 
@@ -8,25 +9,34 @@ class BattleUISystem:
         self.original_player_images = None
         self.original_enemy_images = None
 
+    def _get_hud_entity(self, entity_id: str) -> dict:
+        """Get and validate an HUD entity"""
+        hud_entity = self.entity_manager.get_entity_by_id(entity_id)
+        if not hud_entity:
+            raise ValueError(f"HUD entity with ID '{entity_id}' not found in EntityManager")
+        return hud_entity
+
+    def _calculate_hp_percentage(self, hp_component: HPComponent) -> float:
+        """Calculate the HP percentage (0.0 to 1.0)"""
+        return hp_component.current_hp / hp_component.max_hp if hp_component.max_hp > 0 else 0
+
+    def _crop_hp_bar_images(self, hud_entity: dict, original_images: list, filled_width: int, bar_height: int) -> None:
+        """Crop all HP bar frames based on filled_width"""
+        for i, original_image in enumerate(original_images):
+            if filled_width > 0:
+                cropped = original_image.subsurface((0, 0, filled_width, bar_height))
+            else:
+                cropped = pygame.Surface((0, bar_height))
+            hud_entity["animated_sprite"].sprite.images[i] = cropped
+
     def update(self, enemy_id: str) -> None:
-        # Get player entity:
+        # Get entities
         player = self.entity_manager.get_entity_by_id("player")
         if not player:
             raise ValueError("Player entity not found in EntityManager")
 
-        # Get player's health component:
-        health_component = player["hp"]
-        if not health_component:
-            raise ValueError("Health component not found for player entity")
-
-        # Get enemy hp hud entity:
-        enemy_hud_entity = self.entity_manager.get_entity_by_id(f"hp_hud_{enemy_id}")
-        if not enemy_hud_entity:
-            raise ValueError(f"Enemy HP HUD entity with ID 'hp_hud_{enemy_id}' not found in EntityManager")
-
-        player_hud_entity = self.entity_manager.get_entity_by_id("hp_hud_player")
-        if not player_hud_entity:
-            raise ValueError("Player HP HUD entity with ID 'hp_hud_player' not found in EntityManager")
+        player_hud_entity = self._get_hud_entity("hp_hud_player")
+        enemy_hud_entity = self._get_hud_entity(f"hp_hud_{enemy_id}")
 
         # Store original images on first call
         if self.original_player_images is None:
@@ -34,47 +44,21 @@ class BattleUISystem:
         if self.original_enemy_images is None:
             self.original_enemy_images = [img.copy() for img in enemy_hud_entity["animated_sprite"].sprite.images]
 
-        # Update health bar UI based on player's current HP
-        current_hp = health_component.current_hp
-        max_hp = health_component.max_hp
-        hp_percentage = current_hp / max_hp if max_hp > 0 else 0
+        # Update player HP bar
+        player_hp = player["hp"]
+        player_hp_percentage = self._calculate_hp_percentage(player_hp)
+        player_filled_width = int(96 * player_hp_percentage)
+        self._crop_hp_bar_images(player_hud_entity, self.original_player_images, player_filled_width, 32)
 
-        bar_width = 96
-        bar_height = 32
-        filled_width = int(bar_width * hp_percentage)
-
-        # Crop player HP bar (show only the filled portion from left)
-        for i, original_image in enumerate(self.original_player_images):
-            if filled_width > 0:
-                cropped = original_image.subsurface((0, 0, filled_width, bar_height))
-            else:
-                # If HP is 0, show empty surface
-                cropped = pygame.Surface((0, bar_height))
-            player_hud_entity["animated_sprite"].sprite.images[i] = cropped
-
-        # Display enemy HP bar if enemy is still alive
+        # Update enemy HP bar
         enemy = self.entity_manager.get_entity_by_id(enemy_id)
-
         if not enemy:
             return
         
-        if not "hp" in enemy:
+        if "hp" not in enemy:
             raise ValueError(f"Health component not found for enemy entity with ID '{enemy_id}'")
         
-        enemy_hp_component = enemy["hp"]
-        enemy_current_hp = enemy_hp_component.current_hp
-        enemy_max_hp = enemy_hp_component.max_hp
-        enemy_hp_percentage = enemy_current_hp / enemy_max_hp if enemy_max_hp > 0 else 0
-
-        enemy_bar_width = 96
-        enemy_bar_height = 32
-        enemy_filled_width = int(enemy_bar_width * enemy_hp_percentage)
-        
-        # Crop enemy HP bar (show only the filled portion from left)
-        for i, original_image in enumerate(self.original_enemy_images):
-            if enemy_filled_width > 0:
-                cropped = original_image.subsurface((0, 0, enemy_filled_width, enemy_bar_height))
-            else:
-                # If HP is 0, show empty surface
-                cropped = pygame.Surface((0, enemy_bar_height))
-            enemy_hud_entity["animated_sprite"].sprite.images[i] = cropped
+        enemy_hp = enemy["hp"]
+        enemy_hp_percentage = self._calculate_hp_percentage(enemy_hp)
+        enemy_filled_width = int(96 * enemy_hp_percentage)
+        self._crop_hp_bar_images(enemy_hud_entity, self.original_enemy_images, enemy_filled_width, 32)
