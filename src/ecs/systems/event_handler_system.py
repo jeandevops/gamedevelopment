@@ -65,6 +65,8 @@ class BattleEventHandlerSystem(EventHandlerSystem):
     def __init__(self, entity_manager: EntityManager, state_manager: GameStateManager):
         self.entity_manager = entity_manager
         self.state_manager = state_manager
+        self.last_attack_time = 0
+        self.attack_cooldown = 0.5  # 0.5 second cooldown between attacks
 
     def process_events(self, events):
         """Processes input events during battle (for testing, allows insta-kill enemy)"""
@@ -77,9 +79,18 @@ class BattleEventHandlerSystem(EventHandlerSystem):
         if keys[K_q]:
             pygame.quit()
             exit()
-        # Insta-kill enemy for testing:
+        
+        # Insta-kill enemy for testing (with cooldown):
         if keys[K_k]:
-            current_enemy_id = self.state_manager.get_current_enemy()
-            if current_enemy_id:
-                self.entity_manager.delete_entity(current_enemy_id)
-            self.state_manager.change_state("PLAYING")
+            import time
+            current_time = time.time()
+            if current_time - self.last_attack_time >= self.attack_cooldown:
+                self.last_attack_time = current_time
+                current_enemy_id = self.state_manager.get_current_enemy()
+                if current_enemy_id:
+                    enemy = self.entity_manager.get_entity_by_id(current_enemy_id)
+                    if enemy and "hp" in enemy:
+                        enemy["hp"].take_damage(10)
+                        if not enemy["hp"].is_alive():
+                            self.entity_manager.delete_entity(current_enemy_id)
+                            self.state_manager.change_state("PLAYING")

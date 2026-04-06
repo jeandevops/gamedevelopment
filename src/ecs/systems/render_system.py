@@ -30,7 +30,7 @@ class RenderingSystem:
         logger.debug(f"Rendering {len(tiles)} tiles, {visible_tiles_count} visible")
 
         # Render characters:
-        characters = self.entity_manager.get_entities_with_components(["position", "animated_sprite"])
+        characters = self.entity_manager.get_entities_with_components(["position", "animated_sprite", "sprite_pool"])
         for _entity_id, components in characters:
             if "tile" in components:
                 continue  # Skip tiles, already rendered
@@ -42,6 +42,34 @@ class RenderingSystem:
                 components["position"].y - self.camera_component.y
             )
         )
+
+        # Render HUDs:
+        huds = self.entity_manager.get_entities_with_components(["position", "animated_sprite", "hud"])
+
+        # Render background first (so it appears behind the bars)
+        for _entity_id, components in huds:
+            if "background" in _entity_id:
+                self.screen.blit(
+                    components["animated_sprite"].sprite.image,
+                    (
+                        components["position"].x - self.camera_component.x,
+                        components["position"].y - self.camera_component.y
+                    )
+                )
+
+        # Then render the HUD bars on top
+        for _entity_id, components in huds:
+            if "background" in _entity_id:
+                continue  # Skip background, already rendered
+            
+            self.screen.blit(
+                components["animated_sprite"].sprite.image,
+                (
+                    components["position"].x - self.camera_component.x,
+                    components["position"].y - self.camera_component.y
+                )
+            )
+
 
     def _retrieve_tiles(self) -> list[tuple[str, dict]]:
         """Retrieves all tile entities from the EntityManager"""

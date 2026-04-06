@@ -13,6 +13,8 @@ TREE_AND_WATER_FILE = "tx-tree-and-water.png"
 CHARACTER_SPRITES_PATH = "assets/sprites/doll/"
 CHARACTER_FILE = "character-sprite-sheet.png"
 ENEMY_SPRITES_PATH = "assets/sprites/enemies/"
+HUD_SPRITES_PATH = "assets/hud/"
+HUD_FILE = "hud.png"
 
 TILE_SIZE = {
     "width": 32,

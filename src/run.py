@@ -8,6 +8,7 @@ from helpers.map_file_loader import load_map
 from world.map_loader import MapFactory
 from world.player_factory import PlayerFactory
 from world.enemies_factory import EnemiesFactory
+from world.hud_factory import HUDFactory
 
 # Components:
 from ecs.components.camera import CameraComponent
@@ -153,6 +154,10 @@ class BattleGame(Game):
     def main_loop(self):
         # Object that will defines the FPS dinamically:
         clock = pygame.time.Clock()
+        current_enemy = self.state_manager.get_current_enemy()
+
+        if not current_enemy:
+            raise RuntimeError("No current enemy set in GameStateManager, cannot start battle loop")
 
         while self.state_manager.get_state() == "BATTLE_STARTED":
             # Get elapsed time since last frame and limit to target FPS
@@ -160,7 +165,13 @@ class BattleGame(Game):
             delta_time = milliseconds_elapsed / 1000.0
             # Process battle menu events
             self.event_handler_system.process_events(pygame.event.get())
+            self.battle_ui_system.update(current_enemy)
             self._render(delta_time)
+
+        # Delete all remaining huds at the end of the battle loop
+        huds = self.entity_manager.get_entities_with_components(["hud"])
+        for _entity_id, components in huds:
+                self.entity_manager.delete_entity(_entity_id)
 
 class Run:
     @staticmethod
@@ -255,6 +266,11 @@ class Run:
                 event_handler_system = BattleEventHandlerSystem(entity_manager, state_manager)
 
                 battle_ui_system = BattleUISystem(entity_manager, screen)
+
+                current_enemy = state_manager.get_current_enemy()
+                if not current_enemy:
+                    raise RuntimeError("No current enemy set in GameStateManager, cannot start battle")
+                HUDFactory.create_battle_hud(entity_manager, current_enemy)
 
                 battle_game = BattleGame(
                     entity_manager=entity_manager,
