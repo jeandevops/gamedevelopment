@@ -50,7 +50,7 @@ class WorldExploringGame(Game):
     def _render(self, delta_time: float):
         # Render and animate:
         self.character_animation_system.update()
-        self.screen.fill((0, 0, 0))
+        self.screen.fill((114, 117, 27))         # Fill with color #72751B:
         self.animation_system.animate(delta_time=delta_time)
         self.rendering_system.render()
         pygame.display.update()
@@ -113,7 +113,7 @@ class BattleGame(Game):
     def _render(self, delta_time: float):
         # Render and animate:
         self.character_animation_system.update()
-        self.zoomed_surface.fill((0, 0, 0))
+        self.zoomed_surface.fill((114, 117, 27))
         self.animation_system.animate(delta_time=delta_time)
         self.rendering_system.render()
         

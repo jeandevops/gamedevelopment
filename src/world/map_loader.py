@@ -65,7 +65,7 @@ class MapFactory:
         # Values represent collision tolerance in pixels
         collision_map = {
             OBSTACLES: 16,
-            MARGIN: 0,
+            MARGIN: 13,
         }
         
         if tile_type in collision_map:
