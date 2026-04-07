@@ -5,6 +5,7 @@ from abc import ABC, abstractmethod
 # Utils
 from helpers.constants import CAMERA_WIDTH, CAMERA_HEIGHT, FPS, CAMERA_LERP_SPEED
 from helpers.map_file_loader import load_map
+from helpers.system_manager import SystemManager
 from world.map_loader import MapFactory
 from world.player_factory import PlayerFactory
 from world.enemies_factory import EnemiesFactory
@@ -14,16 +15,9 @@ from world.hud_factory import HUDFactory
 from ecs.components.camera import CameraComponent
 
 # Systems:
-from ecs.systems.render_system import RenderingSystem
-from ecs.systems.camera_system import CameraSystem
 from ecs.systems.event_handler_system import EventHandlerSystem
 from ecs.systems.event_handler_system import WorldEventHandlerSystem
 from ecs.systems.event_handler_system import BattleEventHandlerSystem
-from ecs.systems.movement_system import MovementSystem
-from ecs.systems.animation_system import AnimationSystem
-from ecs.systems.character_animation_system import CharacterAnimationSystem
-from ecs.systems.enemies_system import EnemiesSystem
-from ecs.systems.battle_ui_system import BattleUISystem
 
 # Entity Manager
 from ecs.entity_manager import EntityManager
@@ -32,61 +26,39 @@ from helpers.game_state_manager import GameStateManager
 
 class Game(ABC):
     @abstractmethod
-    def __init__(self,
-                 entity_manager: EntityManager | None,
-                 state_manager: GameStateManager | None,
-                 camera_component: CameraComponent | None,
-                 camera_system: CameraSystem | None,
-                 event_handler_system: EventHandlerSystem | None,
-                 movement_system: MovementSystem | None,
-                 animation_system: AnimationSystem | None,
-                 player_animation_system: CharacterAnimationSystem | None,
-                 enemies_system: EnemiesSystem | None,
-                 screen: pygame.Surface | None,
-                 rendering_system: RenderingSystem | None,
-                 battle_ui_system: BattleUISystem | None,
-                 ):
-        raise NotImplementedError("Subclasses must implement this method")
+    def __init__(self, screen: pygame.Surface, **systems):
+        self.screen = screen
+        self.systems = systems
 
     @abstractmethod
     def main_loop(self):
         raise NotImplementedError("Subclasses must implement this method")
 
 class WorldExploringGame(Game):
-    def __init__(self,
-                 entity_manager: EntityManager,
-                 state_manager: GameStateManager,
-                 camera_component: CameraComponent,
-                 camera_system: CameraSystem,
-                 event_handler_system: EventHandlerSystem,
-                 movement_system: MovementSystem,
-                 animation_system: AnimationSystem,
-                 player_animation_system: CharacterAnimationSystem,
-                 enemies_system: EnemiesSystem,
-                 screen: pygame.Surface,
-                 rendering_system: RenderingSystem,
-                 ):
-        self.entity_manager = entity_manager
-        self.state_manager = state_manager
-        self.camera_component = camera_component
-        self.camera_system = camera_system
-        self.event_handler_system = event_handler_system
-        self.movement_system = movement_system
-        self.animation_system = animation_system
-        self.player_animation_system = player_animation_system
-        self.enemies_system = enemies_system
-        self.screen = screen
-        self.rendering_system = rendering_system
+    def __init__(self, screen: pygame.Surface, **systems):
+        super().__init__(screen, **systems)
+        self.entity_manager = systems["entity_manager"]
+        self.state_manager = systems["state_manager"]
+        self.camera_system = systems["camera_system"]
+        self.event_handler_system = systems.get("event_handler_system")
+        self.movement_system = systems["movement_system"]
+        self.animation_system = systems["animation_system"]
+        self.character_animation_system = systems["character_animation_system"]
+        self.enemies_system = systems["enemies_system"]
+        self.rendering_system = systems["rendering_system"]
 
     def _render(self, delta_time: float):
         # Render and animate:
-        self.player_animation_system.update()
+        self.character_animation_system.update()
         self.screen.fill((0, 0, 0))
         self.animation_system.animate(delta_time=delta_time)
         self.rendering_system.render()
         pygame.display.update()
         
     def main_loop(self):
+        # Create world-specific event handler (not in system manager)
+        self.event_handler_system = WorldEventHandlerSystem(self.entity_manager, self.state_manager)
+        
         # Object that will defines the FPS dinamically:
         clock = pygame.time.Clock()
         # Fixed timestep for physics (always 1/FPS, regardless of actual rendering FPS)
@@ -118,25 +90,14 @@ class WorldExploringGame(Game):
             self._render(delta_time)
 
 class BattleGame(Game):
-    def __init__(self,
-                 entity_manager: EntityManager,
-                 state_manager: GameStateManager,
-                 event_handler_system: EventHandlerSystem,
-                 animation_system: AnimationSystem,
-                 player_animation_system: CharacterAnimationSystem,
-                 screen: pygame.Surface,
-                 rendering_system: RenderingSystem,
-                 battle_ui_system: BattleUISystem,
-                 zoom_scale: float = 2.0,
-                 ):
-        self.entity_manager = entity_manager
-        self.state_manager = state_manager
-        self.event_handler_system = event_handler_system
-        self.animation_system = animation_system
-        self.player_animation_system = player_animation_system
-        self.screen = screen
-        self.rendering_system = rendering_system
-        self.battle_ui_system = battle_ui_system
+    def __init__(self, screen: pygame.Surface, zoom_scale: float = 2.0, **systems):
+        super().__init__(screen, **systems)
+        self.entity_manager = systems["entity_manager"]
+        self.state_manager = systems["state_manager"]
+        self.animation_system = systems["animation_system"]
+        self.character_animation_system = systems["character_animation_system"]
+        self.rendering_system = systems["rendering_system"]
+        self.battle_ui_system = systems["battle_ui_system"]
         self.zoom_scale = zoom_scale
         
         # Create a smaller surface for zoomed rendering
@@ -146,12 +107,12 @@ class BattleGame(Game):
         self.zoomed_surface = pygame.Surface((self.zoomed_width, self.zoomed_height))
         
         # Temporarily swap the screen for rendering
-        self.original_screen = rendering_system.screen
-        rendering_system.screen = self.zoomed_surface
+        self.original_screen = self.rendering_system.screen
+        self.rendering_system.screen = self.zoomed_surface
 
     def _render(self, delta_time: float):
         # Render and animate:
-        self.player_animation_system.update()
+        self.character_animation_system.update()
         self.zoomed_surface.fill((0, 0, 0))
         self.animation_system.animate(delta_time=delta_time)
         self.rendering_system.render()
@@ -168,6 +129,9 @@ class BattleGame(Game):
         pygame.display.update()
 
     def main_loop(self):
+        # Create battle-specific event handler (not in system manager)
+        self.event_handler_system = BattleEventHandlerSystem(self.entity_manager, self.state_manager)
+        
         # Object that will defines the FPS dinamically:
         clock = pygame.time.Clock()
         current_enemy = self.state_manager.get_current_enemy()
@@ -215,91 +179,71 @@ class Run:
 
     @staticmethod
     def start():
-        # Initialize game components and systems here, then create Game instance and call main loop
-        entity_manager = EntityManager()
-        state_manager = GameStateManager()
-        camera_component = CameraComponent(x=0, y=0, viewport_width=CAMERA_WIDTH, viewport_height=CAMERA_HEIGHT, lerp_speed=CAMERA_LERP_SPEED)
-        camera_system = CameraSystem(camera_component)
-        movement_system = MovementSystem(entity_manager)
-        animation_system = AnimationSystem(entity_manager)
-        player_animation_system = CharacterAnimationSystem(entity_manager)
-        enemies_system = EnemiesSystem(entity_manager, state_manager)
-        # Check for fullscrren mode and set display mode accordingly
-        fullscreen_mode = pygame.FULLSCREEN | pygame.SCALED if os.getenv("FULLSCREEN", "0") == "1" else pygame.SCALED
-
-        # Load first map:
-        Run._create_entities("forest", entity_manager, player_initial_position=(32, 32))
-
-
+        # Initialize primary components
         pygame.init()
         pygame.display.set_caption("World of Tiles")
         
-        # Create the display ONCE - reuse it for all game modes
+        # Setup
+        entity_manager = EntityManager()
+        state_manager = GameStateManager()
+        camera_component = CameraComponent(x=0, y=0, viewport_width=CAMERA_WIDTH, viewport_height=CAMERA_HEIGHT, lerp_speed=CAMERA_LERP_SPEED)
+        fullscreen_mode = pygame.FULLSCREEN | pygame.SCALED if os.getenv("FULLSCREEN", "0") == "1" else pygame.SCALED
+        
+        # Create display ONCE
         screen = pygame.display.set_mode((CAMERA_WIDTH, CAMERA_HEIGHT), fullscreen_mode)
-
+        
+        # Load first map
+        Run._create_entities("forest", entity_manager, player_initial_position=(32, 32))
+        
+        # Create system manager ONCE - all systems created here
+        system_manager = SystemManager(entity_manager, state_manager, screen, camera_component)
+        
+        # Main game loop - alternate between game modes
         while True:
-            # Reuse the same screen, just change what we render
-            rendering_system = RenderingSystem(screen, entity_manager, camera_component)
-            event_handler_system = WorldEventHandlerSystem(entity_manager, state_manager)
-
-            world_map_game = WorldExploringGame(
-                entity_manager=entity_manager,
-                state_manager=state_manager,
-                camera_component=camera_component,
-                event_handler_system=event_handler_system,
-                movement_system=movement_system,
-                camera_system=camera_system,
-                animation_system=animation_system,
-                player_animation_system=player_animation_system,
-                enemies_system=enemies_system,
-                screen = screen,
-                rendering_system=rendering_system,
-            )
-
+            # WORLD EXPLORATION MODE
             state_manager.change_state("PLAYING")
-            world_map_game.main_loop()
-
-            # When a battle start:
+            world_systems = system_manager.get_world_systems()
+            world_game = WorldExploringGame(screen, **world_systems)
+            world_game.main_loop()
+            
+            # BATTLE MODE
             if state_manager.get_state() == "BATTLE_BEGIN":
-                # Retrieve player position from the world map game:
-                player = world_map_game.entity_manager.get_entity_by_id("player")
-
+                # Get player position for battle camera
+                player = entity_manager.get_entity_by_id("player")
                 if player is None:
                     raise RuntimeError("Player entity not found, cannot start battle")
-
+                
                 player_x = player["position"].x
                 player_y = player["position"].y
-
-                # Create a battle camera (don't recreate the display, just change the camera)
+                
+                # Create battle camera (zoomed in on player area)
                 battle_grid_x = int(player_x) - (camera_component.viewport_width // 4)
                 battle_grid_y = int(player_y) - (camera_component.viewport_height // 4)
-                battle_grid_width = camera_component.viewport_width // 2
-                battle_grid_height = camera_component.viewport_height // 2
-                battle_camera = CameraComponent(x=battle_grid_x, y=battle_grid_y, viewport_width=battle_grid_width, viewport_height=battle_grid_height, lerp_speed=CAMERA_LERP_SPEED)
+                battle_camera = CameraComponent(
+                    x=battle_grid_x, 
+                    y=battle_grid_y, 
+                    viewport_width=CAMERA_WIDTH, 
+                    viewport_height=CAMERA_HEIGHT, 
+                    lerp_speed=CAMERA_LERP_SPEED
+                )
                 
-                # Reuse the same screen, just pass a different camera
-                rendering_system = RenderingSystem(screen, entity_manager, battle_camera)
-
-                event_handler_system = BattleEventHandlerSystem(entity_manager, state_manager)
-                battle_ui_system = BattleUISystem(entity_manager, screen)
-
+                # Update rendering system to use battle camera
+                system_manager.update_camera(battle_camera)
+                
+                # Create battle HUD
                 current_enemy = state_manager.get_current_enemy()
                 if not current_enemy:
-                    raise RuntimeError("No current enemy set in GameStateManager, cannot start battle")
+                    raise RuntimeError("No current enemy set in GameStateManager")
                 HUDFactory.create_battle_hud(entity_manager, current_enemy)
-
-                battle_game = BattleGame(
-                    entity_manager=entity_manager,
-                    state_manager=state_manager,
-                    event_handler_system=event_handler_system,
-                    animation_system=animation_system,
-                    player_animation_system=player_animation_system,
-                    screen=screen,
-                    rendering_system=rendering_system,
-                    battle_ui_system=battle_ui_system,
-                )
+                
+                # Start battle with systems
+                battle_systems = system_manager.get_battle_systems()
+                battle_game = BattleGame(screen, zoom_scale=2.0, **battle_systems)
                 state_manager.change_state("BATTLE_STARTED")
                 battle_game.main_loop()
+                
+                # Restore world camera after battle
+                system_manager.update_camera(camera_component)
 
 if __name__ == "__main__":
     Run.start()
