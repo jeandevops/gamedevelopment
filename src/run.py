@@ -127,6 +127,7 @@ class BattleGame(Game):
                  screen: pygame.Surface,
                  rendering_system: RenderingSystem,
                  battle_ui_system: BattleUISystem,
+                 zoom_scale: float = 2.0,
                  ):
         self.entity_manager = entity_manager
         self.state_manager = state_manager
@@ -136,18 +137,33 @@ class BattleGame(Game):
         self.screen = screen
         self.rendering_system = rendering_system
         self.battle_ui_system = battle_ui_system
+        self.zoom_scale = zoom_scale
+        
+        # Create a smaller surface for zoomed rendering
+        screen_width, screen_height = screen.get_size()
+        self.zoomed_width = int(screen_width / zoom_scale)
+        self.zoomed_height = int(screen_height / zoom_scale)
+        self.zoomed_surface = pygame.Surface((self.zoomed_width, self.zoomed_height))
+        
+        # Temporarily swap the screen for rendering
+        self.original_screen = rendering_system.screen
+        rendering_system.screen = self.zoomed_surface
 
     def _render(self, delta_time: float):
         # Render and animate:
         self.player_animation_system.update()
-        self.screen.fill((0, 0, 0))
+        self.zoomed_surface.fill((0, 0, 0))
         self.animation_system.animate(delta_time=delta_time)
         self.rendering_system.render()
         
-        # Render battle UI (HP bars)
+        # Render battle UI (HP bars) to zoomed surface
         enemy_id = self.state_manager.get_current_enemy()
         if enemy_id:
             self.battle_ui_system.update(enemy_id)
+        
+        # Scale up the zoomed surface and blit to the main screen
+        scaled_surface = pygame.transform.scale(self.zoomed_surface, self.screen.get_size())
+        self.screen.blit(scaled_surface, (0, 0))
         
         pygame.display.update()
 
@@ -172,6 +188,9 @@ class BattleGame(Game):
         huds = self.entity_manager.get_entities_with_components(["hud"])
         for _entity_id, components in huds:
                 self.entity_manager.delete_entity(_entity_id)
+        
+        # Restore the original screen to rendering system for next game mode
+        self.rendering_system.screen = self.original_screen
 
 class Run:
     @staticmethod
@@ -214,11 +233,12 @@ class Run:
 
         pygame.init()
         pygame.display.set_caption("World of Tiles")
+        
+        # Create the display ONCE - reuse it for all game modes
+        screen = pygame.display.set_mode((CAMERA_WIDTH, CAMERA_HEIGHT), fullscreen_mode)
 
         while True:
-
-            # These systems must be created inside the loop, because they need to be re-created when switching to battle mode, with a different camera and event handler:
-            screen = pygame.display.set_mode((CAMERA_WIDTH, CAMERA_HEIGHT), fullscreen_mode)
+            # Reuse the same screen, just change what we render
             rendering_system = RenderingSystem(screen, entity_manager, camera_component)
             event_handler_system = WorldEventHandlerSystem(entity_manager, state_manager)
 
@@ -240,7 +260,6 @@ class Run:
             world_map_game.main_loop()
 
             # When a battle start:
-            # Generate battle grid based on the current camera position (visible tiles):
             if state_manager.get_state() == "BATTLE_BEGIN":
                 # Retrieve player position from the world map game:
                 player = world_map_game.entity_manager.get_entity_by_id("player")
@@ -251,20 +270,17 @@ class Run:
                 player_x = player["position"].x
                 player_y = player["position"].y
 
-                # The battle grid will be generated based on player position, not camera, to ensure the battle area is centered around the player:
-                battle_grid_x = int(player_x) - (camera_component.viewport_width // 4)  # Center battle grid around player
+                # Create a battle camera (don't recreate the display, just change the camera)
+                battle_grid_x = int(player_x) - (camera_component.viewport_width // 4)
                 battle_grid_y = int(player_y) - (camera_component.viewport_height // 4)
                 battle_grid_width = camera_component.viewport_width // 2
                 battle_grid_height = camera_component.viewport_height // 2
                 battle_camera = CameraComponent(x=battle_grid_x, y=battle_grid_y, viewport_width=battle_grid_width, viewport_height=battle_grid_height, lerp_speed=CAMERA_LERP_SPEED)
-                #@TODO: To implement the isometric grid in the future:
-                #battle_grid = map_factory.generate_battle_grid(battle_grid_x, battle_grid_y, battle_grid_width, battle_grid_height, entity_manager)
-                # Close up to the battle area:
-                screen = pygame.display.set_mode((battle_grid_width, battle_grid_height), fullscreen_mode)
+                
+                # Reuse the same screen, just pass a different camera
                 rendering_system = RenderingSystem(screen, entity_manager, battle_camera)
 
                 event_handler_system = BattleEventHandlerSystem(entity_manager, state_manager)
-
                 battle_ui_system = BattleUISystem(entity_manager, screen)
 
                 current_enemy = state_manager.get_current_enemy()
@@ -278,7 +294,7 @@ class Run:
                     event_handler_system=event_handler_system,
                     animation_system=animation_system,
                     player_animation_system=player_animation_system,
-                    screen = screen,
+                    screen=screen,
                     rendering_system=rendering_system,
                     battle_ui_system=battle_ui_system,
                 )
