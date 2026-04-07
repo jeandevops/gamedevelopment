@@ -217,7 +217,8 @@ class EnemiesFactory:
                 "animated_sprite": SpriteComponent(sprite=sprites_pool.sprites["idle_down"]), # Default facing down
                 "ai_behavior": AIBehaviorComponent(behavior_type="wander", vision_range=vision_range, interaction_range=interaction_range, aggressive=aggressive, wander_speed=wander_speed, chase_speed=chase_speed),
                 "hp": HPComponent(max_hp=ENEMIES_SPECS[enemy_type]["hp"]),
-                "sprite_pool": sprites_pool.sprites
+                "sprite_pool": sprites_pool.sprites,
+                "character": None  # Marker component to identify this entity as a character
             }
             self.entity_manager.add_entity(f"enemy_{_enemy_index}", enemy_components)
             logger.debug("Created {} enemy at position ({}, {})".format(enemy_type, enemy_x, enemy_y))

@@ -173,6 +173,7 @@ class PlayerFactory:
             "direction": DirectionComponent(),
             "hp": HPComponent(max_hp=PLAYER_MAX_HP),
             "animated_sprite": SpriteComponent(sprite=sprites["down"]), # Default facing down
-            "sprite_pool": sprites
+            "sprite_pool": sprites,
+            "character": None  # Marker component to identify this entity as a character
         }
         entity_manager.add_entity("player", player_components)

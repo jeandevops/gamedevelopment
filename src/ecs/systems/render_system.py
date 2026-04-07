@@ -2,7 +2,6 @@ from ecs.entity_manager import EntityManager
 from ecs.components.camera import CameraComponent
 import pygame
 from helpers.constants import TILE_SIZE
-from helpers.logger import logger
 from typing import Generator
 
 class RenderingSystem:
@@ -17,9 +16,7 @@ class RenderingSystem:
         # Render tiles:
         tiles = self._retrieve_tiles()
         visible_tiles = self._filter_visible_tiles(tiles)
-        visible_tiles_count = 0
         for _entity_id, tile_components in visible_tiles:
-            visible_tiles_count += 1
             if tile_components.get("animated_sprite"):
                 tile_components["animated_sprite"].sprite.rect.topleft = (
                     tile_components["position"].x - self.camera_component.x,
@@ -27,10 +24,8 @@ class RenderingSystem:
                 )
                 self.screen.blit(tile_components["animated_sprite"].sprite.image, tile_components["animated_sprite"].sprite.rect)
 
-        logger.debug(f"Rendering {len(tiles)} tiles, {visible_tiles_count} visible")
-
         # Render characters:
-        characters = self.entity_manager.get_entities_with_components(["position", "animated_sprite", "sprite_pool"])
+        characters = self.entity_manager.get_entities_with_components(["position", "animated_sprite", "character"])
         for _entity_id, components in characters:
             if "tile" in components:
                 continue  # Skip tiles, already rendered
@@ -43,25 +38,30 @@ class RenderingSystem:
             )
         )
 
-        # Render HUDs:
+        # Render HUDs (background first, then bars):
         huds = self.entity_manager.get_entities_with_components(["position", "animated_sprite", "hud"])
-
-        # Render background first (so it appears behind the bars)
+        background_huds = []
+        bar_huds = []
+        
+        # Separate backgrounds from bars in a single pass
         for _entity_id, components in huds:
             if "background" in _entity_id:
-                self.screen.blit(
-                    components["animated_sprite"].sprite.image,
-                    (
-                        components["position"].x - self.camera_component.x,
-                        components["position"].y - self.camera_component.y
-                    )
+                background_huds.append((_entity_id, components))
+            else:
+                bar_huds.append((_entity_id, components))
+        
+        # Render all backgrounds first
+        for _entity_id, components in background_huds:
+            self.screen.blit(
+                components["animated_sprite"].sprite.image,
+                (
+                    components["position"].x - self.camera_component.x,
+                    components["position"].y - self.camera_component.y
                 )
+            )
 
-        # Then render the HUD bars on top
-        for _entity_id, components in huds:
-            if "background" in _entity_id:
-                continue  # Skip background, already rendered
-            
+        # Then render all bars on top
+        for _entity_id, components in bar_huds:
             self.screen.blit(
                 components["animated_sprite"].sprite.image,
                 (
