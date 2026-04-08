@@ -22,10 +22,10 @@ class EnemiesSpritePool:
         enemy_file = f"{enemy_name}.png"
         enemies_size = ENEMIES_SPECS[enemy_name]["size"]
         sprite_size = SIZE_MAP[enemies_size]
+        sprite_sheet = AnimatedSprite.load_sprite_sheet(ENEMY_SPRITES_PATH, enemy_file)
         self.sprites = {
             "up": AnimatedSprite(
-                file_path=ENEMY_SPRITES_PATH,
-                file_name=enemy_file, 
+                sprite_sheet=sprite_sheet,
                 coordinate_x=(2*sprite_size), 
                 coordinate_y=(4*sprite_size), 
                 width=sprite_size, 
@@ -33,8 +33,7 @@ class EnemiesSpritePool:
                 horizontal_steps=2
             ),
             "down": AnimatedSprite(
-                file_path=ENEMY_SPRITES_PATH,
-                file_name=enemy_file, 
+                sprite_sheet=sprite_sheet,
                 coordinate_x=(2*sprite_size), 
                 coordinate_y=0, 
                 width=sprite_size, 
@@ -42,8 +41,7 @@ class EnemiesSpritePool:
                 horizontal_steps=2
             ),
             "left": AnimatedSprite(
-                file_path=ENEMY_SPRITES_PATH,
-                file_name=enemy_file, 
+                sprite_sheet=sprite_sheet,
                 coordinate_x=(2*sprite_size), 
                 coordinate_y=(6*sprite_size), 
                 width=sprite_size, 
@@ -51,8 +49,7 @@ class EnemiesSpritePool:
                 horizontal_steps=2
             ),
             "right": AnimatedSprite(
-                file_path=ENEMY_SPRITES_PATH,
-                file_name=enemy_file, 
+                sprite_sheet=sprite_sheet,
                 coordinate_x=(2*sprite_size), 
                 coordinate_y=(2*sprite_size), 
                 width=sprite_size, 
@@ -60,8 +57,7 @@ class EnemiesSpritePool:
                 horizontal_steps=2
             ),
             "up_right": AnimatedSprite(
-                file_path=ENEMY_SPRITES_PATH,
-                file_name=enemy_file, 
+                sprite_sheet=sprite_sheet,
                 coordinate_x=(2*sprite_size), 
                 coordinate_y=(3*sprite_size), 
                 width=sprite_size, 
@@ -69,8 +65,7 @@ class EnemiesSpritePool:
                 horizontal_steps=2
             ),
             "up_left": AnimatedSprite(
-                file_path=ENEMY_SPRITES_PATH,
-                file_name=enemy_file, 
+                sprite_sheet=sprite_sheet,
                 coordinate_x=(2*sprite_size), 
                 coordinate_y=(5*sprite_size), 
                 width=sprite_size, 
@@ -78,8 +73,7 @@ class EnemiesSpritePool:
                 horizontal_steps=2
             ),
             "down_right": AnimatedSprite(
-                file_path=ENEMY_SPRITES_PATH,
-                file_name=enemy_file, 
+                sprite_sheet=sprite_sheet,
                 coordinate_x=(2*sprite_size), 
                 coordinate_y=(1*sprite_size), 
                 width=sprite_size, 
@@ -87,8 +81,7 @@ class EnemiesSpritePool:
                 horizontal_steps=2
             ),
             "down_left": AnimatedSprite(
-                file_path=ENEMY_SPRITES_PATH,
-                file_name=enemy_file, 
+                sprite_sheet=sprite_sheet,
                 coordinate_x=(2*sprite_size), 
                 coordinate_y=(7*sprite_size), 
                 width=sprite_size, 
@@ -96,8 +89,7 @@ class EnemiesSpritePool:
                 horizontal_steps=2
             ),
             "idle_up": AnimatedSprite(
-                file_path=ENEMY_SPRITES_PATH,
-                file_name=enemy_file, 
+                sprite_sheet=sprite_sheet,
                 coordinate_x=0, 
                 coordinate_y=(4*sprite_size), 
                 width=sprite_size, 
@@ -105,8 +97,7 @@ class EnemiesSpritePool:
                 horizontal_steps=2
             ),
             "idle_down": AnimatedSprite(
-                file_path=ENEMY_SPRITES_PATH,
-                file_name=enemy_file, 
+                sprite_sheet=sprite_sheet,
                 coordinate_x=0, 
                 coordinate_y=0, 
                 width=sprite_size, 
@@ -114,8 +105,7 @@ class EnemiesSpritePool:
                 horizontal_steps=2
             ),
             "idle_left": AnimatedSprite(
-                file_path=ENEMY_SPRITES_PATH,
-                file_name=enemy_file, 
+                sprite_sheet=sprite_sheet,
                 coordinate_x=0, 
                 coordinate_y=(6*sprite_size), 
                 width=sprite_size, 
@@ -123,8 +113,7 @@ class EnemiesSpritePool:
                 horizontal_steps=2
             ),
             "idle_right": AnimatedSprite(
-                file_path=ENEMY_SPRITES_PATH,
-                file_name=enemy_file, 
+                sprite_sheet=sprite_sheet,
                 coordinate_x=0, 
                 coordinate_y=(2*sprite_size), 
                 width=sprite_size, 
@@ -132,8 +121,7 @@ class EnemiesSpritePool:
                 horizontal_steps=2
             ),
             "idle_up_right": AnimatedSprite(
-                file_path=ENEMY_SPRITES_PATH,
-                file_name=enemy_file, 
+                sprite_sheet=sprite_sheet,
                 coordinate_x=0, 
                 coordinate_y=(3*sprite_size), 
                 width=sprite_size, 
@@ -141,8 +129,7 @@ class EnemiesSpritePool:
                 horizontal_steps=2
             ),
             "idle_up_left": AnimatedSprite(
-                file_path=ENEMY_SPRITES_PATH,
-                file_name=enemy_file, 
+                sprite_sheet=sprite_sheet,
                 coordinate_x=0, 
                 coordinate_y=(5*sprite_size), 
                 width=sprite_size, 
@@ -150,8 +137,7 @@ class EnemiesSpritePool:
                 horizontal_steps=2
             ),
             "idle_down_right": AnimatedSprite(
-                file_path=ENEMY_SPRITES_PATH,
-                file_name=enemy_file, 
+                sprite_sheet=sprite_sheet,
                 coordinate_x=0, 
                 coordinate_y=(1*sprite_size), 
                 width=sprite_size, 
@@ -159,8 +145,7 @@ class EnemiesSpritePool:
                 horizontal_steps=2
             ),
             "idle_down_left": AnimatedSprite(
-                file_path=ENEMY_SPRITES_PATH,
-                file_name=enemy_file, 
+                sprite_sheet=sprite_sheet,
                 coordinate_x=0, 
                 coordinate_y=(7*sprite_size), 
                 width=sprite_size, 

@@ -26,11 +26,15 @@ class TileSpritePool:
         cristals_textures_path = os.path.join(root_path, "..", *CRISTALS_SPRITES_PATH.split("/"))
 
         try:
+            terrain_sheet = AnimatedSprite.load_sprite_sheet(terrain_textures_path, TILE_SET_SPRITE_FILE)
+            obstacles_sheet = AnimatedSprite.load_sprite_sheet(terrain_textures_path, TREE_AND_WATER_FILE)
+            cristals_sheet = AnimatedSprite.load_sprite_sheet(cristals_textures_path, GREY_CRISTAL_SPRITE_FILE)
+
             sprites_pool = {
-                COMMOM_TERRAIN: AnimatedSprite(file_path = terrain_textures_path, file_name=TILE_SET_SPRITE_FILE, coordinate_x=0, coordinate_y=0, width=TILE_SIZE["width"], height=TILE_SIZE["height"], horizontal_steps=4),
-                OBSTACLES: AnimatedSprite(file_path = terrain_textures_path, file_name=TREE_AND_WATER_FILE, coordinate_x=0, coordinate_y=0, width=TILE_SIZE["width"], height=TILE_SIZE["height"], horizontal_steps=3),
-                LANDSCAPING: AnimatedSprite(file_path = terrain_textures_path, file_name=TILE_SET_SPRITE_FILE, coordinate_x=128, coordinate_y=96, width=TILE_SIZE["width"], height=TILE_SIZE["height"], horizontal_steps=3),
-                MARGIN: AnimatedSprite(file_path = cristals_textures_path, file_name=GREY_CRISTAL_SPRITE_FILE, coordinate_x=0, coordinate_y=0, width=TILE_SIZE["width"], height=TILE_SIZE["height"], horizontal_steps=8)
+                COMMOM_TERRAIN: AnimatedSprite(sprite_sheet=terrain_sheet, coordinate_x=0, coordinate_y=0, width=TILE_SIZE["width"], height=TILE_SIZE["height"], horizontal_steps=4),
+                OBSTACLES: AnimatedSprite(sprite_sheet=obstacles_sheet, coordinate_x=0, coordinate_y=0, width=TILE_SIZE["width"], height=TILE_SIZE["height"], horizontal_steps=3),
+                LANDSCAPING: AnimatedSprite(sprite_sheet=terrain_sheet, coordinate_x=128, coordinate_y=96, width=TILE_SIZE["width"], height=TILE_SIZE["height"], horizontal_steps=3),
+                MARGIN: AnimatedSprite(sprite_sheet=cristals_sheet, coordinate_x=0, coordinate_y=0, width=TILE_SIZE["width"], height=TILE_SIZE["height"], horizontal_steps=8)
             }
             self.pool = sprites_pool
             logger.info(f"Sprite pool initialized with {len(sprites_pool)} sprite types")

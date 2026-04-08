@@ -10,10 +10,10 @@ from helpers.constants import (
 class HUDSpritePool:
     def __init__(self):
         """ Initializes the sprite pool with preloaded sprites for different HUD elements """
+        hud_sheet = AnimatedSprite.load_sprite_sheet(HUD_SPRITES_PATH, HUD_FILE)
         self.sprites = {
             "hp_bar": AnimatedSprite(
-                file_path=HUD_SPRITES_PATH,
-                file_name=HUD_FILE,
+                sprite_sheet=hud_sheet,
                 coordinate_x=0,
                 coordinate_y=0,
                 width=96,
@@ -21,8 +21,7 @@ class HUDSpritePool:
                 horizontal_steps=3
             ),
             "enemy_hp_bar": AnimatedSprite(
-                file_path=HUD_SPRITES_PATH,
-                file_name=HUD_FILE,
+                sprite_sheet=hud_sheet,
                 coordinate_x=0,
                 coordinate_y=64,
                 width=96,
@@ -30,8 +29,7 @@ class HUDSpritePool:
                 horizontal_steps=3
             ),
             "background": AnimatedSprite(
-                file_path=HUD_SPRITES_PATH,
-                file_name=HUD_FILE,
+                sprite_sheet=hud_sheet,
                 coordinate_x=0,
                 coordinate_y=32,
                 width=96,
