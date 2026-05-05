@@ -6,6 +6,7 @@ from ecs.entity_manager import EntityManager
 from ecs.components.sprite import SpriteComponent
 from ecs.components.ai import AIBehaviorComponent
 from ecs.components.hp import HPComponent
+from ecs.components.dialogue import DialogueComponent
 from .sprites_maker import AnimatedSprite
 from helpers.constants import (
     ENEMY_SPRITES_PATH,
@@ -185,6 +186,7 @@ class EnemiesFactory:
             enemy_type = enemy["type"]
             enemy_x = enemy["position"]["x"]
             enemy_y = enemy["position"]["y"]
+            dialogue = enemy.get("dialogue", [])
             vision_range = ENEMIES_SPECS[enemy_type]["vision_range"]
             interaction_range = ENEMIES_SPECS[enemy_type]["interaction_range"]
             aggressive = ENEMIES_SPECS[enemy_type]["aggressive"]
@@ -203,6 +205,7 @@ class EnemiesFactory:
                 "ai_behavior": AIBehaviorComponent(behavior_type="wander", vision_range=vision_range, interaction_range=interaction_range, aggressive=aggressive, wander_speed=wander_speed, chase_speed=chase_speed),
                 "hp": HPComponent(max_hp=ENEMIES_SPECS[enemy_type]["hp"]),
                 "sprite_pool": sprites_pool.sprites,
+                "dialogue": DialogueComponent(dialogue),
                 "character": None  # Marker component to identify this entity as a character
             }
             self.entity_manager.add_entity(f"enemy_{_enemy_index}", enemy_components)
