@@ -15,6 +15,7 @@ CHARACTER_FILE = "character-sprite-sheet.png"
 ENEMY_SPRITES_PATH = "assets/sprites/enemies/"
 HUD_SPRITES_PATH = "assets/hud/"
 HUD_FILE = "hud.png"
+TEXT_SPRITES_PATH = "assets/text/8x8text_darkGrayShadow.png"
 
 TILE_SIZE = {
     "width": 32,
@@ -57,6 +58,8 @@ MIN_COLLISION_OVERLAP_PIXELS = 3  # Minimum pixel overlap required to trigger co
 
 FPS = 30
 DEFAULT_ANIMATION_FRAME_DURATION = 150  # in milliseconds
+
+DEFAULT_TEXT_SPEED_CHAR_PER_SEC = 60 
 
 # ============ ERROR MESSAGES ============
 
