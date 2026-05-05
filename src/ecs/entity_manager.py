@@ -1,14 +1,16 @@
+from typing import Any
+
 class EntityManager:
     def __init__(self):
         """Initializes the EntityManager with an empty entity dictionary"""
-        self.entities = {}
+        self.entities: dict[str,dict] = {}
 
     def add_entity(self, entity_id: str, components: dict) -> None:
         """Adds a new entity with its components to the manager"""
         self.entities[entity_id] = components
 
-    def get_entity_by_id(self, entity_id: str) -> dict | None:
-        """Returns the entity with the specified ID"""
+    def get_entity_by_id(self, entity_id: str) -> dict[str, Any] | None:
+        """Returns the components from an entity with the specified ID"""
         return self.entities.get(entity_id, None)
 
     def get_entities_with_components(self, component_type_list: list[str]) -> list[tuple[str, dict]]:
@@ -18,6 +20,14 @@ class EntityManager:
             if all(component_type in components for component_type in component_type_list):
                 result.append((entity_id, components))
         return result
+    
+    def delete_component_from_entity(self, entity_id: str, component_name: str) -> None:
+        """Delete component from entity"""
+        entity = self.entities.get(entity_id, None)
+        if not entity:
+            return None
+        if component_name in entity:
+            del entity[component_name]
     
     def delete_entity(self, entity_id: str) -> None:
         """Deletes an entity from the manager"""
