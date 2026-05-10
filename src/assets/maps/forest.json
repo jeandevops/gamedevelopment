@@ -3,11 +3,13 @@
   "enemies": [
     {
       "type": "orc",
-      "position": {"x": 300, "y": 300}
+      "position": {"x": 300, "y": 300},
+      "dialogue": "Grrr! You are not welcome here! Leave this forest or face my wrath!"
     },
     {
       "type": "orc",
-      "position": {"x": 500, "y": 400}
+      "position": {"x": 500, "y": 400},
+      "dialogue": "Grrr! You are not welcome here! Leave this forest or face my wrath!"
     }
   ],
   "tiles": [

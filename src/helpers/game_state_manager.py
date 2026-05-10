@@ -2,6 +2,7 @@ class GameStateManager:
     def __init__(self):
         self.state = "PLAYING"  # Default state
         self.enemy_in_battle = None  # Track the current enemy in battle
+        self.interlocutor = None
 
     def change_state(self, new_state: str) -> None:
         """Change the current game state"""
@@ -16,7 +17,16 @@ class GameStateManager:
         self.change_state("BATTLE_BEGIN")
         self.enemy_in_battle = enemy_id
         return enemy_id
+    
+    def start_conversation(self, interlocutor_id: str) -> None:
+        """Transition to dialogue state and set up necessary components"""
+        self.change_state("DIALOGUE")
+        self.interlocutor = interlocutor_id
 
     def get_current_enemy(self) -> str | None:
         """Get the ID of the current enemy in battle"""
         return self.enemy_in_battle
+    
+    def get_current_interlocutor(self) -> str | None:
+        """Get the ID of the current interlocutor"""
+        return self.interlocutor

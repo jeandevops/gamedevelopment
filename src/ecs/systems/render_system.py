@@ -2,13 +2,14 @@ from ecs.entity_manager import EntityManager
 from ecs.components.camera import CameraComponent
 import pygame
 from helpers.constants import TILE_SIZE
-from typing import Generator
+from typing import Generator, Optional
 
 class RenderingSystem:
-    def __init__(self, screen: pygame.Surface, entity_manager: EntityManager, camera_component: CameraComponent):
+    def __init__(self, screen: pygame.Surface, entity_manager: EntityManager, camera_component: CameraComponent, font=None):
         self.screen = screen
         self.entity_manager = entity_manager
         self.camera_component = camera_component
+        self.font = font  # Optional bitmap font for dialogue rendering
 
     def render(self):
         """Renders all onto the screen with depth sorting for collision tiles and characters"""
@@ -83,6 +84,10 @@ class RenderingSystem:
                     components["position"].y - self.camera_component.y
                 )
             )
+        
+        # Render dialogue text if font is available
+        if self.font:
+            self._render_dialogues()
 
     def _is_collision_tile(self, tile_components: dict) -> bool:
         """Check if a tile is a collision tile (LANDSCAPING or OBSTACLES layers)"""
@@ -132,3 +137,47 @@ class RenderingSystem:
             if (cam_x - margin <= pos.x <= cam_x + screen_width + margin and
                 cam_y - margin <= pos.y <= cam_y + screen_height + margin):
                 yield entity_id, components
+
+    def _render_dialogues(self):
+        """Render dialogue text for all entities that have dialogue components.
+        
+        Searches for entities with both 'dialogue' and 'dialogue_box' components,
+        then renders the visible characters of the current page using the bitmap font.
+        """
+        # Get all entities with dialogue and dialogue_box components
+        dialogue_entities = self.entity_manager.get_entities_with_components(["dialogue", "dialogue_box"])
+        
+        for entity_id, components in dialogue_entities:
+            dialogue = components["dialogue"]
+            dialogue_box = components["dialogue_box"]
+            
+            # Only render if there are pages to display
+            if not dialogue.pages or dialogue.current_page >= len(dialogue.pages):
+                continue
+            
+            # Get current page text
+            current_page = dialogue.pages[dialogue.current_page]
+            
+            # Render each line of the current page
+            for line_idx, line in enumerate(current_page):
+                y_offset = line_idx * self.font.char_height
+                
+                # Render visible characters of this line
+                visible_in_line = min(
+                    dialogue.visible_chars - sum(len(current_page[i]) for i in range(line_idx)),
+                    len(line)
+                )
+                
+                for char_idx in range(visible_in_line):
+                    char = line[char_idx]
+                    if char not in self.font.chars:
+                        continue
+                    
+                    x_offset = char_idx * self.font.char_width
+                    screen_x = dialogue_box.rect.x + x_offset - self.camera_component.x
+                    screen_y = dialogue_box.rect.y + y_offset - self.camera_component.y
+                    
+                    # Only render if within screen bounds
+                    if -self.font.char_width <= screen_x < self.screen.get_width() and \
+                       -self.font.char_height <= screen_y < self.screen.get_height():
+                        self.screen.blit(self.font.chars[char], (screen_x, screen_y))
