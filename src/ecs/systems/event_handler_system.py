@@ -157,7 +157,8 @@ class DialogEventHandlerSystem(EventHandlerSystem):
                         dialogue.timer = 0
                     else:
                         # Dialogue is over, transition back to battle state
-                        self.state_manager.change_state("BATTLE_STARTED")
+                        self.entity_manager.delete_component_from_entity(interlocutor_id, "dialogue")
+                        self.state_manager.change_state("BATTLE_BEGIN")
 
     def _page_length(self, dialogue):
         """Calculate the number of characters on the current page."""

@@ -18,7 +18,6 @@ from world.hud_factory import HUDFactory
 
 # Components:
 from ecs.components.camera import CameraComponent
-from ecs.components.dialogue import DialogueBoxComponent
 from ecs.systems.text_system import DialoguePreparation
 
 # Systems:
@@ -154,6 +153,8 @@ class BattleGame(Game):
             # Get elapsed time since last frame and limit to target FPS
             milliseconds_elapsed = clock.tick(FPS)
             delta_time = milliseconds_elapsed / 1000.0
+            # Accumulate time
+            time_accumulator += delta_time
             # Process battle menu events
             self.event_handler_system.process_events(pygame.event.get())
             self.battle_ui_system.update(current_enemy)
@@ -209,6 +210,8 @@ class DialogGame(Game):
             # Get elapsed time since last frame and limit to target FPS
             milliseconds_elapsed = clock.tick(FPS)
             delta_time = milliseconds_elapsed / 1000.0
+            # Accumulate time
+            time_accumulator += delta_time
             
             # Process dialogue input events
             self.event_handler_system.process_events(pygame.event.get(), interlocutor_id)
@@ -216,8 +219,10 @@ class DialogGame(Game):
             # Update dialogue typewriter effect
             self.dialogue_system.update(self.entity_manager, delta_time)
             
-            # Render the scene with dialogue
-            self._render(delta_time)
+            while time_accumulator >= _FIXED_DELTA_TIME:
+                # Render the scene with dialogue
+                self._render(delta_time)
+                time_accumulator -= _FIXED_DELTA_TIME
 
 class Run:
     @staticmethod
